@@ -1,0 +1,7 @@
+backend/.clasp.json
+.clasp.json
+.clasprc.json
+.DS_Store
+*.log
+node_modules/
+test-output/

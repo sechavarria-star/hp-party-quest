@@ -1,0 +1,110 @@
+name: Release HP Party Quest live
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: hp-party-quest-live
+  cancel-in-progress: false
+
+jobs:
+  release:
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    runs-on: ubuntu-latest
+    env:
+      CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+      APPS_SCRIPT_DEPLOYMENT_ID: ${{ secrets.APPS_SCRIPT_DEPLOYMENT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate source
+        run: npm run check
+
+      - name: Require transferable Google authentication
+        shell: bash
+        run: |
+          test -n "$CLASPRC_JSON" || {
+            echo 'CLASPRC_JSON is unavailable; Google Apps Script publication cannot continue.' >&2
+            exit 20
+          }
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+
+      - name: Install clasp and resolve the existing bound project
+        shell: bash
+        run: |
+          npm install --global @google/clasp
+          clasp list > /tmp/clasp-list.txt
+          SCRIPT_ID="$(node scripts/resolve-script-id.mjs /tmp/clasp-list.txt 'HP Party Quest')"
+          printf '{"scriptId":"%s","rootDir":"."}\n' "$SCRIPT_ID" > backend/.clasp.json
+          echo "Resolved the existing HP Party Quest Apps Script project."
+
+      - name: Push and deploy Apps Script
+        id: backend
+        shell: bash
+        run: |
+          cd backend
+          clasp push --force
+          if [ -n "$APPS_SCRIPT_DEPLOYMENT_ID" ]; then
+            DEPLOY_OUTPUT="$(clasp deploy --deploymentId "$APPS_SCRIPT_DEPLOYMENT_ID" --description "HP Party Quest ${GITHUB_SHA::7}")"
+            DEPLOYMENT_ID="$APPS_SCRIPT_DEPLOYMENT_ID"
+          else
+            DEPLOY_OUTPUT="$(clasp deploy --description "HP Party Quest ${GITHUB_SHA::7}")"
+            DEPLOYMENT_ID="$(printf '%s\n' "$DEPLOY_OUTPUT" | grep -oE 'AKfy[A-Za-z0-9_-]+' | head -1)"
+          fi
+          test -n "$DEPLOYMENT_ID" || { echo "$DEPLOY_OUTPUT" >&2; exit 21; }
+          API_URL="https://script.google.com/macros/s/${DEPLOYMENT_ID}/exec"
+          echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Generate immutable frontend runtime configuration
+        id: config
+        shell: bash
+        run: |
+          FRONTEND_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          node scripts/render-config.mjs "${{ steps.backend.outputs.api_url }}" "$FRONTEND_URL" frontend/config.js
+          ! grep -R 'REEMPLAZAR\|DEPLOYMENT_ID' frontend/config.js
+          echo "frontend_url=$FRONTEND_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Bootstrap and verify backend
+        shell: bash
+        run: |
+          node scripts/bootstrap-backend.mjs "${{ steps.backend.outputs.api_url }}" "${{ steps.config.outputs.frontend_url }}" || {
+            echo 'The backend deployment did not become healthy.' >&2
+            exit 22
+          }
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend
+
+      - name: Deploy GitHub Pages
+        id: pages
+        uses: actions/deploy-pages@v4
+
+      - name: Verify live frontend and backend
+        run: node scripts/verify-live.mjs "${{ steps.backend.outputs.api_url }}" "${{ steps.pages.outputs.page_url }}"
+
+      - name: Publish verified URLs
+        run: |
+          {
+            echo '## HP Party Quest live'
+            echo '- Frontend: ${{ steps.pages.outputs.page_url }}'
+            echo '- Backend: ${{ steps.backend.outputs.api_url }}'
+            echo '- Status: verified'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,9 @@
+{
+  "name": "hp-party-quest",
+  "version": "2.1.1",
+  "private": true,
+  "scripts": {
+    "check": "node --check frontend/config.js && node --check frontend/assets/app.js && node tests/setup-table-compat.mjs && node tests/deployment-readiness.mjs && node tests/security-regression.mjs",
+    "serve": "python3 -m http.server 8080 -d frontend"
+  }
+}

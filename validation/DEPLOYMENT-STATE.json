@@ -1,0 +1,20 @@
+{
+  "project": "HP Party Quest",
+  "version": "2.1.1",
+  "date": "2026-11-20",
+  "sourceValidated": true,
+  "mobileFlowValidated": true,
+  "mobileFlowEnvironment": "two isolated emulated mobile browsers, local backend functions",
+  "physicalPhonesValidated": false,
+  "duplicateEmailTakeoverBlocked": true,
+  "appsScriptProject": "1nPqqQ9x9dJdRvk1xKw4OIxbf3kuu9pxu9FDf18AyWD0sFs3MzBzCRiVg",
+  "appsScriptDeployment": "AKfycbxlx7Mmweb0eOXFDDk7WOhqUYvayyCR-WA3W5Gd14ydQXeIT3UvCH1Ffw_XhKlPOQmfPA",
+  "automatedReleasePrepared": true,
+  "liveDeploymentVerified": false,
+  "blockingConditions": [
+    "Owner must grant initial Google Sheets runtime authorization; live endpoint still returns 403.",
+    "Physical two-phone registration, optical QR scan and voting validation pending."
+  ],
+  "manualFileEditingRequired": false,
+  "powerShellRequired": false
+}
