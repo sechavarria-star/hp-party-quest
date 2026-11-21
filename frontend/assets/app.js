@@ -8,7 +8,7 @@
   const views = [...document.querySelectorAll('.view')];
   const $ = (id) => document.getElementById(id);
 
-  document.title = config.EVENT_NAME || 'HP Party Quest';
+  document.title = config.EVENT_NAME || "HP Kick Off '27 Quest";
   $('hero-tagline').textContent = config.EVENT_TAGLINE || 'Conectate. Explorá. Votá.';
 
   function show(id) {
@@ -213,7 +213,10 @@
     gradient.addColorStop(0, '#102a4c'); gradient.addColorStop(1, '#081b33');
     ctx.fillStyle = gradient; ctx.fillRect(0, 0, 1080, 1350);
     ctx.fillStyle = '#f04b47'; ctx.fillRect(0, 0, 22, 1350);
-    ctx.fillStyle = '#36c5f0'; ctx.font = '700 34px Segoe UI, Arial'; ctx.fillText('HP PARTY QUEST', 90, 110);
+    const logo = document.querySelector('img.brand-mark');
+    const logoReady = logo && logo.complete && logo.naturalWidth > 0;
+    if (logoReady) ctx.drawImage(logo, 90, 57, 72, 72);
+    ctx.fillStyle = '#36c5f0'; ctx.font = '700 34px Segoe UI, Arial'; ctx.fillText("HP KICK OFF '27 QUEST", logoReady ? 185 : 90, 110);
     ctx.fillStyle = '#ffffff'; ctx.font = '800 68px Segoe UI, Arial'; ctx.fillText('PLAYER PASS', 90, 190);
     ctx.fillStyle = '#ffffff'; ctx.fillRect(220, 275, 640, 640); ctx.imageSmoothingEnabled = false;
     ctx.drawImage(source, 260, 315, 560, 560);
@@ -221,7 +224,7 @@
     ctx.fillStyle = '#36c5f0'; ctx.font = '700 32px Consolas, monospace'; ctx.fillText(state.participant.participantId, 540, 1095);
     ctx.fillStyle = '#bdd0e2'; ctx.font = '28px Segoe UI, Arial'; ctx.fillText('Mostrá este QR durante los challenges', 540, 1190);
     const link = document.createElement('a');
-    link.download = `HP-Party-Quest-${state.participant.participantId}.png`;
+    link.download = `HP-Kick-Off-27-Quest-${state.participant.participantId}.png`;
     link.href = canvas.toDataURL('image/png'); link.click();
   });
 

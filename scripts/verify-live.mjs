@@ -25,7 +25,7 @@ if (!body.ok || body.data?.service !== 'HP Party Quest API' || body.data?.versio
 }
 
 const page = await getText(frontendUrl);
-if (!/HP Party Quest/i.test(page.text)) throw new Error('Frontend HTML does not identify HP Party Quest.');
+if (!/HP Kick Off '27 Quest/i.test(page.text)) throw new Error('Frontend HTML does not identify HP Kick Off 27 Quest.');
 const config = await getText(new URL('config.js', frontendUrl).href);
 if (config.text.includes('REEMPLAZAR') || !config.text.includes(apiUrl)) throw new Error('Live frontend configuration is incomplete.');
 

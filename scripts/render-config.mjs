@@ -11,7 +11,7 @@ const canonicalFrontend = frontendUrl.endsWith('/') ? frontendUrl : `${frontendU
 const js = `window.HPQ_CONFIG = Object.freeze({\n` +
   `  API_URL: ${JSON.stringify(apiUrl)},\n` +
   `  FRONTEND_URL: ${JSON.stringify(canonicalFrontend)},\n` +
-  `  EVENT_NAME: 'HP Party Quest',\n` +
+  `  EVENT_NAME: "HP Kick Off '27 Quest",\n` +
   `  EVENT_TAGLINE: 'Conectate. Explorá. Votá.',\n` +
   `  ACTIVE_CHALLENGE_ID: 'CH-COOL-GLASSES',\n` +
   `  REQUEST_TIMEOUT_MS: 45000\n` +

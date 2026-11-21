@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 const files = {};
 function visit(dir = '.') {
   for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -10,7 +11,14 @@ function visit(dir = '.') {
     else files[name] = crypto.createHash('sha256').update(fs.readFileSync(name)).digest('hex');
   }
 }
-visit();
+if (process.argv.includes('--staged')) {
+  // Allow a frontend release while unrelated local backend work remains pending.
+  const names = execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' }).split('\0').filter(Boolean);
+  for (const name of names) {
+    if (['RELEASE-MANIFEST.json', 'SHA256SUMS.txt'].includes(name)) continue;
+    files[name] = crypto.createHash('sha256').update(execFileSync('git', ['show', ':' + name])).digest('hex');
+  }
+} else visit();
 fs.writeFileSync('RELEASE-MANIFEST.json', JSON.stringify({
   name: 'HP Party Quest', version: '2.1.1', builtAt: new Date().toISOString(),
   releaseMode: 'Local Apps Script authentication + GitHub Pages Actions', files

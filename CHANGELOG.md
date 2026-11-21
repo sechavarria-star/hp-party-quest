@@ -2,6 +2,11 @@
 
 ## 2.1.1 — 2026-11-20
 
+### Identidad visual actualizada el 21/11/2026
+
+- Logo HP de la cartelera en lugar de la imitación tipográfica.
+- Kick Off '27 reemplaza las menciones visibles de Party en la interfaz y el pase descargable.
+
 - Se bloquea la emisión de sesiones por email duplicado y se normalizan emails importados.
 - La sesión del navegador se conserva ante errores de conexión.
 - Se controla cualquier voto válido previo, incluso si hay filas invalidadas.
