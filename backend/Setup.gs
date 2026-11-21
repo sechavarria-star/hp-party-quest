@@ -89,7 +89,10 @@ function ensureSheet_(ss, name, requiredHeaders) {
     const missing = requiredHeaders.filter(function (header) { return current.indexOf(header) < 0; });
     if (missing.length) sheet.getRange(1, current.length + 1, 1, missing.length).setValues([missing]);
   }
-  sheet.setFrozenRows(1);
+  // Imported dashboards can have merged title cells crossing row 1.
+  // Freezing headers is cosmetic and must never block registration or voting.
+  try { sheet.setFrozenRows(1); }
+  catch (error) { console.warn('Skipped header freeze for ' + name + ': ' + error.message); }
 }
 
 function seedConfig_() {

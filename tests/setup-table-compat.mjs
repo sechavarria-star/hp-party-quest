@@ -38,7 +38,10 @@ const sheets = new Map(Object.entries(schema).map(([name, headers]) => {
       if (row === 1 && rows === 1) return range([this.headers.slice(col - 1, col - 1 + cols)]);
       return range([]);
     },
-    setFrozenRows(value) { this.frozenRows = value; },
+    setFrozenRows(value) {
+      if (name === 'Dashboard') throw new Error('Cannot freeze part of a merged cell');
+      this.frozenRows = value;
+    },
     autoResizeColumns: () => {},
     createFilter: () => { throw new Error("You can’t apply a filter to a range that partially intersects a table"); }
   };
@@ -60,6 +63,6 @@ const first = context.setupProject();
 const second = context.setupProject();
 assert.equal(first.ok, true);
 assert.equal(second.ok, true);
-for (const sheet of sheets.values()) assert.equal(sheet.frozenRows, 1);
+for (const sheet of sheets.values()) assert.equal(sheet.frozenRows, sheet.name === 'Dashboard' ? 0 : 1);
 
 console.log('setupProject native-table compatibility and idempotency: OK');

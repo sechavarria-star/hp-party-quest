@@ -6,6 +6,7 @@
 - La sesión del navegador se conserva ante errores de conexión.
 - Se controla cualquier voto válido previo, incluso si hay filas invalidadas.
 - Bootstrap en caché para evitar formatear ocho hojas en cada operación.
+- Las celdas combinadas del dashboard no bloquean el inicio si no permiten inmovilizar encabezados.
 - La URL del frontend ya no puede establecerse con un dominio arbitrario desde health.
 - Pruebas de seguridad y flujo con dos navegadores móviles aislados.
 - Publicación con autenticación local; GitHub Actions publica solo el frontend después de comprobar el backend.

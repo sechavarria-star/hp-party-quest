@@ -12,7 +12,6 @@
   "automatedReleasePrepared": true,
   "liveDeploymentVerified": false,
   "blockingConditions": [
-    "Owner must grant initial Google Sheets runtime authorization; live endpoint still returns 403.",
     "Physical two-phone registration, optical QR scan and voting validation pending."
   ],
   "manualFileEditingRequired": false,

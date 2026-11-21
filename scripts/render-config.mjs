@@ -14,7 +14,7 @@ const js = `window.HPQ_CONFIG = Object.freeze({\n` +
   `  EVENT_NAME: 'HP Party Quest',\n` +
   `  EVENT_TAGLINE: 'Conectate. Explorá. Votá.',\n` +
   `  ACTIVE_CHALLENGE_ID: 'CH-COOL-GLASSES',\n` +
-  `  REQUEST_TIMEOUT_MS: 15000\n` +
+  `  REQUEST_TIMEOUT_MS: 45000\n` +
   `});\n`;
 
 fs.writeFileSync(output, js, 'utf8');
