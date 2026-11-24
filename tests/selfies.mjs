@@ -5,6 +5,8 @@ const jpeg = fs.readFileSync(new URL('./fixtures/selfie-qa.jpg', import.meta.url
 const photo = 'data:image/jpeg;base64,' + jpeg.toString('base64');
 const { call, context, tables, properties } = createBackend();
 const registration = { firstName: 'Ana', lastName: 'QA', email: 'qa.selfie.ana@hp.com', termsAccepted: true };
+assert.throws(() => call('register', registration), e => e.code === 'SELFIE_REQUIRED');
+assert.equal(tables.get('Participants').length, 0);
 assert.throws(() => call('register', { ...registration, selfieDataUrl: photo }), e => e.code === 'SELFIE_CONSENT_REQUIRED');
 assert.equal(tables.get('Participants').length, 0);
 assert.throws(() => context.validateSelfie_('data:image/svg+xml;base64,PHN2Zz4=', true), e => e.code === 'INVALID_SELFIE');
@@ -13,9 +15,15 @@ assert.throws(() => context.validateSelfie_('data:image/jpeg;base64,YWJjZA==', t
 const huge = fs.readFileSync(new URL('./fixtures/selfie-too-wide.jpg', import.meta.url));
 assert.throws(() => context.validateSelfie_('data:image/jpeg;base64,' + huge.toString('base64'), true), e => e.code === 'INVALID_SELFIE');
 const ana = call('register', { ...registration, selfieDataUrl: photo, selfieConsent: true });
-const beto = call('register', { ...registration, firstName: 'Beto', email: 'qa.selfie.beto@hp.com' });
+const beto = call('register', { ...registration, firstName: 'Beto', email: 'qa.selfie.beto@hp.com', selfieDataUrl: photo, selfieConsent: true });
+// Simulate a participant created by the earlier optional-photo release.
+tables.get('Participants')[1].SelfieUpdatedAt = '';
+tables.get('Selfies').splice(1, 1);
+const legacyVote = { sessionToken: beto.sessionToken, candidateQrToken: ana.participant.qrToken, challengeId: 'CH-COOL-GLASSES' };
+assert.throws(() => call('vote', legacyVote), e => e.code === 'SELFIE_REQUIRED');
+assert.throws(() => call('vote', { ...legacyVote, sessionToken: ana.sessionToken, candidateQrToken: beto.participant.qrToken }), e => e.code === 'CANDIDATE_SELFIE_REQUIRED');
 assert.equal(ana.participant.hasSelfie, true);
-assert.equal(beto.participant.hasSelfie, false);
+assert.equal(call('session', { sessionToken: beto.sessionToken }).participant.hasSelfie, false);
 assert.equal(tables.get('Selfies').length, 1);
 assert.equal(context.readSelfie_(ana.participant.participantId), photo);
 assert(tables.get('Selfies')[0].Data1.startsWith('b64:'));

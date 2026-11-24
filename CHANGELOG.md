@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.2.1 — 2026-11-24
+
+- Pase personal PNG de 1080 × 1350 con opción de compartir como archivo de imagen y alternativa de descarga.
+- Imagen preparada antes de tocar el botón para conservar el permiso de compartir del celular; cancelar no descarga nada.
+
+- Selfie obligatoria para completar el registro, con validación en cliente y servidor.
+- Los registros anteriores sin foto deben completarla desde su pase para votar y recibir votos.
+- Se conserva la identidad y el QR de los participantes existentes.
+
 ## 2.2.0 — 2026-11-24
 
 - Selfie opcional al registrarse, con vista previa, recorte cuadrado y compresión local.

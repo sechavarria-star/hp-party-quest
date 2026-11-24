@@ -1,6 +1,6 @@
 {
   "project": "HP Party Quest",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "date": "2026-11-24",
   "sourceValidated": true,
   "mobileFlowValidated": true,
@@ -8,6 +8,7 @@
   "physicalPhonesValidated": false,
   "physicalRegistrationValidated": true,
   "selfieFlowLocallyValidated": true,
+  "selfieRequired": true,
   "selfieFlowLiveValidated": true,
   "liveApiCrossVotesValidated": true,
   "qaChallengeRestored": true,
@@ -20,5 +21,7 @@
     "Physical two-phone registration, optical QR scan and voting validation pending."
   ],
   "manualFileEditingRequired": false,
-  "powerShellRequired": false
+  "powerShellRequired": false,
+  "passImageExportLocallyValidated": true,
+  "nativePhotoLibraryPhysicalValidation": false
 }

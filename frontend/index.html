@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#081b33">
   <meta name="description" content="Registro y desafíos de HP Kick Off '27 Quest">
   <title>HP Kick Off '27 Quest</title>
-  <link rel="stylesheet" href="assets/styles.css?v=selfie-2.2.0">
+  <link rel="stylesheet" href="assets/styles.css?v=selfie-2.2.1-pass">
 </head>
 <body>
   <div class="ambient ambient-one"></div>
@@ -48,10 +48,10 @@
           </div>
           <label>Email<input id="email" name="email" type="email" autocomplete="email" maxlength="160" placeholder="nombre@hp.com" required></label>
           <fieldset class="selfie-section">
-            <legend>Tu selfie <span class="muted">(opcional)</span></legend>
+            <legend>Tu selfie <span class="muted">(obligatoria)</span></legend>
             <p class="tiny selfie-help">Quienes participen podrán verla al escanear tu QR para confirmar a quién votan.</p>
             <label for="register-selfie-file" class="button button-secondary selfie-picker">Sacar o cargar selfie</label>
-            <input id="register-selfie-file" class="visually-hidden" type="file" accept="image/*" capture="user">
+            <input id="register-selfie-file" class="visually-hidden" type="file" accept="image/*" capture="user" aria-required="true">
             <img id="register-selfie-preview" class="selfie-preview" alt="Vista previa de tu selfie" width="120" height="120" hidden>
             <button id="register-selfie-remove" class="selfie-remove" type="button" hidden>Quitar foto</button>
             <label id="register-selfie-consent-row" class="check-row" hidden><input id="register-selfie-consent" type="checkbox"><span>Acepto guardar mi selfie y mostrarla a participantes registrados que escaneen mi QR durante el juego.</span></label>
@@ -66,7 +66,7 @@
       <article id="view-pass" class="panel view" hidden>
         <div class="section-heading">
           <span class="section-number success">✓</span>
-          <div><p class="kicker">CHECK-IN COMPLETO</p><h2>¡Ya estás participando!</h2></div>
+          <div><p class="kicker">TU REGISTRO</p><h2 id="pass-title">¡Ya estás participando!</h2></div>
         </div>
         <div id="party-pass" class="party-pass">
           <div class="pass-top"><span>HP KICK OFF '27 QUEST</span><span>PLAYER PASS</span></div>
@@ -76,11 +76,17 @@
           <p>Mostrá este QR cuando otra persona quiera votarte.</p>
         </div>
         <div class="button-stack">
-          <button id="download-pass" class="button button-primary" type="button">Guardar mi QR</button>
+          <button id="download-pass" class="button button-primary" type="button">Guardar mi QR como foto</button>
           <button id="refresh-pass" class="button button-secondary" type="button">Actualizar identidad</button>
         </div>
+        <div id="pass-image-options" hidden>
+          <p id="pass-image-status" class="tiny" role="status"></p>
+          <img id="pass-image-preview" alt="Tu pase personal con el QR para guardar como foto" style="display:block;width:100%;max-width:540px;height:auto;margin:16px auto;">
+          <button id="download-pass-png" class="button button-secondary" type="button">Descargar imagen PNG</button>
+        </div>
+        <p class="tiny">Al guardar, elegí Guardar imagen o Fotos si tu celular ofrece esa opción.</p>
         <p class="tiny">No uses modo incógnito. Abrí siempre el juego en este mismo navegador.</p>
-        <details class="selfie-section selfie-update">
+        <details id="pass-selfie-section" class="selfie-section selfie-update">
           <summary>Agregar o cambiar mi selfie</summary>
           <p id="pass-selfie-status" class="tiny selfie-help"></p>
           <label for="pass-selfie-file" class="button button-secondary selfie-picker">Sacar o cargar selfie</label>
@@ -133,8 +139,8 @@
   </main>
 
   <footer><span>HP Kick Off '27 Quest</span><span>Built for people to connect</span></footer>
-  <script src="config.js?v=selfie-2.2.0"></script>
+  <script src="config.js?v=selfie-2.2.1-pass"></script>
   <script src="assets/vendor/hpq-qr.js?v=2.1.1"></script>
-  <script src="assets/app.js?v=selfie-2.2.0" defer></script>
+  <script src="assets/app.js?v=selfie-2.2.1-pass" defer></script>
 </body>
 </html>

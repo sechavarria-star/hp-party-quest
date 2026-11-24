@@ -1,6 +1,6 @@
 {
   "name": "hp-party-quest",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "private": true,
   "scripts": {
     "check": "node --check frontend/config.js && node --check frontend/assets/app.js && node tests/setup-table-compat.mjs && node tests/deployment-readiness.mjs && node tests/security-regression.mjs && node tests/selfies.mjs",

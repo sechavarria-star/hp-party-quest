@@ -1,6 +1,6 @@
 const HPQ = Object.freeze({
   SPREADSHEET_ID: PropertiesService.getScriptProperties().getProperty('HPQ_SPREADSHEET_ID') || '',
-  VERSION: '2.2.0',
+  VERSION: '2.2.1',
   MAX_PAYLOAD_CHARS: 190000
 });
 
@@ -70,6 +70,7 @@ function registerParticipant_(payload) {
   if (payload.termsAccepted !== true) throw appError_('TERMS_REQUIRED', 'Tenés que aceptar el consentimiento para registrarte.');
   validateEmailPolicy_(email);
   const selfie = validateSelfie_(payload.selfieDataUrl, payload.selfieConsent);
+  if (!selfie) throw appError_('SELFIE_REQUIRED', 'Necesitás agregar tu selfie para registrarte.');
 
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
@@ -165,6 +166,12 @@ function castVote_(payload) {
     if (!candidate || String(candidate.data.Status || '').toUpperCase() !== 'ACTIVE') {
       audit_('VOTE_REJECTED', auth.participant.ParticipantID, challenge.ChallengeID, '', 'INVALID_CANDIDATE', {}, auth.session.SessionID, 'WARNING');
       throw appError_('INVALID_CANDIDATE', 'El participante elegido no está disponible.');
+    }
+    if (!auth.participant.SelfieUpdatedAt || !readSelfie_(auth.participant.ParticipantID)) {
+      throw appError_('SELFIE_REQUIRED', 'Primero agregá tu selfie desde tu pase para poder votar.');
+    }
+    if (!candidate.data.SelfieUpdatedAt || !readSelfie_(candidate.data.ParticipantID)) {
+      throw appError_('CANDIDATE_SELFIE_REQUIRED', 'Esta persona todavía debe agregar su selfie para recibir votos.');
     }
     validateChallengeOpen_(challenge);
     if (String(candidate.data.ParticipantID) === String(auth.participant.ParticipantID) && !toBoolean_(challenge.AllowSelfVote)) {

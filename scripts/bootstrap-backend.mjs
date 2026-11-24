@@ -11,7 +11,7 @@ for (let attempt = 0; attempt < 12; attempt += 1) {
     const text = await response.text();
     if (response.ok) {
       const body = JSON.parse(text);
-      if (body.ok && body.data?.service === 'HP Party Quest API' && body.data?.version === '2.2.0' && body.data?.runtimeReady) {
+      if (body.ok && body.data?.service === 'HP Party Quest API' && body.data?.version === '2.2.1' && body.data?.runtimeReady) {
         console.log(JSON.stringify(body, null, 2));
         process.exit(0);
       }

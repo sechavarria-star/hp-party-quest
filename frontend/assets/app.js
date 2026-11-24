@@ -4,6 +4,7 @@
   const config = window.HPQ_CONFIG || {};
   const storageKey = 'hpq.sessionToken.v1';
   const state = { sessionToken: localStorage.getItem(storageKey) || '', participant: null, candidate: null };
+  const passExport = { file: null, url: '', generation: 0 };
   const candidateToken = new URLSearchParams(location.search).get('candidate') || '';
   const views = [...document.querySelectorAll('.view')];
   const $ = (id) => document.getElementById(id);
@@ -143,11 +144,17 @@
     state.participant = participant;
     $('pass-name').textContent = participant.displayName;
     $('pass-id').textContent = participant.participantId;
-    $('pass-selfie-status').textContent = participant.hasSelfie ? 'Tu selfie está guardada. Podés reemplazarla cuando quieras.' : 'Todavía no agregaste una selfie. Es opcional.';
+    const incomplete = !participant.hasSelfie;
+    $('pass-title').textContent = incomplete ? 'Completá tu selfie para participar' : '¡Ya estás participando!';
+    $('pass-selfie-status').textContent = incomplete ? 'La selfie es obligatoria para votar y recibir votos. Agregala acá para habilitar tu pase.' : 'Tu selfie está guardada. Podés reemplazarla cuando quieras.';
+    $('pass-selfie-section').open = incomplete;
+    $('party-pass').hidden = incomplete;
+    $('download-pass').hidden = incomplete;
     const holder = $('qr-code');
     holder.innerHTML = '';
-    window.HPQ_QR.draw(holder, candidateUrl(participant.qrToken), { size: 200, margin: 4 });
+    if (!incomplete) window.HPQ_QR.draw(holder, candidateUrl(participant.qrToken), { size: 200, margin: 4 });
     show('view-pass');
+    preparePassImage(participant, incomplete);
   }
 
   async function restoreSession() {
@@ -183,6 +190,8 @@
         ? `Vas a votar como ${state.participant.displayName}. Tenés un voto para esta consigna.`
         : 'Primero registrate para ver la foto y confirmar el voto.';
       $('vote-button').textContent = state.participant ? 'Confirmar mi voto' : 'Registrarme para votar';
+      $('vote-button').disabled = Boolean(state.participant && !data.candidate.hasSelfie);
+      if (state.participant && !data.candidate.hasSelfie) $('identity-note').textContent = 'Esta persona todavía debe agregar su selfie para recibir votos.';
       show('view-candidate');
     } catch (error) {
       fatal('QR no válido', safeMessage(error));
@@ -201,6 +210,7 @@
       fatal('No pudimos recuperar tu acceso', safeMessage(error));
       return;
     }
+    if (state.participant && !state.participant.hasSelfie) return renderPass(state.participant);
     if (candidateToken) return loadCandidate();
     if (state.participant) return renderPass(state.participant);
     show('view-register');
@@ -230,8 +240,11 @@
     }
     payload.selfieDataUrl = selfieState.register.data;
     payload.selfieConsent = $('register-selfie-consent').checked;
+    if (!payload.selfieDataUrl) {
+      errorNode.textContent = 'La selfie es obligatoria. Tomá o cargá tu foto para continuar.'; errorNode.hidden = false; return;
+    }
     if (payload.selfieDataUrl && !payload.selfieConsent) {
-      errorNode.textContent = 'Aceptá guardar y mostrar tu selfie o quitá la foto para continuar.'; errorNode.hidden = false; return;
+      errorNode.textContent = 'Aceptá guardar y mostrar tu selfie para continuar.'; errorNode.hidden = false; return;
     }
     if (!payload.firstName || !payload.lastName || !payload.email || !payload.termsAccepted) {
       errorNode.textContent = 'Completá todos los campos y aceptá el consentimiento.';
@@ -264,6 +277,7 @@
       const data = await api('saveSelfie', { sessionToken: state.sessionToken, selfieDataUrl: selfieState.pass.data, selfieConsent: true });
       state.participant = data.participant;
       $('pass-selfie-status').textContent = 'Tu selfie está guardada.';
+      if (candidateToken) await loadCandidate(); else renderPass(data.participant);
     } catch (e) { error.textContent = safeMessage(e); error.hidden = false; }
     finally { setBusy(button, false); }
   });
@@ -294,8 +308,7 @@
   $('refresh-pass').addEventListener('click', boot);
   $('retry-button').addEventListener('click', boot);
 
-  $('download-pass').addEventListener('click', () => {
-    if (!state.participant) return;
+  function buildPassCanvas(participant) {
     const source = $('qr-code').querySelector('canvas');
     if (!source) return;
     const canvas = document.createElement('canvas');
@@ -312,13 +325,64 @@
     ctx.fillStyle = '#ffffff'; ctx.font = '800 68px Segoe UI, Arial'; ctx.fillText('PLAYER PASS', 90, 190);
     ctx.fillStyle = '#ffffff'; ctx.fillRect(220, 275, 640, 640); ctx.imageSmoothingEnabled = false;
     ctx.drawImage(source, 260, 315, 560, 560);
-    ctx.textAlign = 'center'; ctx.fillStyle = '#ffffff'; ctx.font = '700 54px Segoe UI, Arial'; ctx.fillText(state.participant.displayName, 540, 1035);
-    ctx.fillStyle = '#36c5f0'; ctx.font = '700 32px Consolas, monospace'; ctx.fillText(state.participant.participantId, 540, 1095);
+    ctx.textAlign = 'center'; ctx.fillStyle = '#ffffff'; ctx.font = '700 54px Segoe UI, Arial'; ctx.fillText(participant.displayName, 540, 1035, 940);
+    ctx.fillStyle = '#36c5f0'; ctx.font = '700 32px Consolas, monospace'; ctx.fillText(participant.participantId, 540, 1095);
     ctx.fillStyle = '#bdd0e2'; ctx.font = '28px Segoe UI, Arial'; ctx.fillText('Mostrá este QR durante los challenges', 540, 1190);
-    const link = document.createElement('a');
-    link.download = `HP-Kick-Off-27-Quest-${state.participant.participantId}.png`;
-    link.href = canvas.toDataURL('image/png'); link.click();
+    return canvas;
+  }
+  async function preparePassImage(participant, incomplete) {
+    const generation = ++passExport.generation;
+    passExport.file = null;
+    if (passExport.url) URL.revokeObjectURL(passExport.url);
+    passExport.url = '';
+    $('pass-image-options').hidden = true;
+    $('pass-image-preview').removeAttribute('src');
+    const button = $('download-pass');
+    button.disabled = true; button.textContent = 'Preparando imagen…';
+    if (incomplete) return;
+    try {
+      const logo = document.querySelector('img.brand-mark');
+      if (logo && !logo.complete) await logo.decode().catch(() => {});
+      if (generation !== passExport.generation) return;
+      const canvas = buildPassCanvas(participant);
+      const blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('No se pudo preparar la imagen.')), 'image/png'));
+      if (generation !== passExport.generation) return;
+      passExport.file = new File([blob], 'HP-Kick-Off-27-Quest-' + participant.participantId + '.png', { type: 'image/png' });
+      passExport.url = URL.createObjectURL(passExport.file);
+      $('pass-image-preview').src = passExport.url;
+      button.textContent = 'Guardar mi QR como foto'; button.disabled = false;
+    } catch (error) {
+      if (generation !== passExport.generation) return;
+      button.textContent = 'Reintentar preparar imagen'; button.disabled = false;
+      $('pass-image-status').textContent = safeMessage(error);
+      $('pass-image-options').hidden = false;
+    }
+  }
+  function showPassImageOptions() {
+    $('pass-image-options').hidden = false;
+    $('pass-image-status').textContent = 'En iPhone, mantené presionada la imagen y elegí Guardar en Fotos. En Android, elegí Descargar imagen o Guardar imagen. Si queda en Descargas, podés abrirla y moverla a Galería.';
+  }
+  $('download-pass').addEventListener('click', async () => {
+    if (!state.participant || !state.participant.hasSelfie) return;
+    if (!passExport.file) { preparePassImage(state.participant, false); return; }
+    const button = $('download-pass');
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [passExport.file] })) {
+        // Prepare the file before the click to preserve native share activation.
+        button.disabled = true;
+        await navigator.share({ files: [passExport.file], title: "Mi pase HP Kick Off '27" });
+        showPassImageOptions();
+        $('pass-image-status').textContent = 'Si elegiste guardar la imagen, revisá Fotos, Galería o Descargas. También podés guardar la imagen que aparece acá.';
+      } else showPassImageOptions();
+    } catch (error) {
+      if (error.name !== 'AbortError') showPassImageOptions();
+    } finally { button.disabled = false; }
   });
-
+  $('download-pass-png').addEventListener('click', () => {
+    if (!passExport.file || !passExport.url || !state.participant?.hasSelfie) return;
+    const link = document.createElement('a');
+    link.download = passExport.file.name; link.href = passExport.url;
+    document.body.appendChild(link); link.click(); link.remove();
+  });
   boot();
 })();

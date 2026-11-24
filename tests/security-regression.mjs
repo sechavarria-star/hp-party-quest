@@ -67,8 +67,9 @@ export function createBackend() {
 
 export function runSecurityTests() {
   const { context, tables, call } = createBackend();
+  const photo = 'data:image/jpeg;base64,' + fs.readFileSync(new URL('./fixtures/selfie-qa.jpg', import.meta.url)).toString('base64');
   const register = (email, name = 'Prueba') => call('register', {
-    firstName: name, lastName: 'QA', email, termsAccepted: true
+    firstName: name, lastName: 'QA', email, termsAccepted: true, selfieDataUrl: photo, selfieConsent: true
   });
   const alice = register(' qa.alice@hp.com ', 'Alice');
   const bob = register('qa.bob@hp.com', 'Bob');
@@ -80,7 +81,7 @@ export function runSecurityTests() {
     { email: 'QA.ALICE@HP.COM', firstName: 'Intruso', lastName: 'QA', termsAccepted: true },
     { email: 'qa.alice@hp.com', firstName: 'Alice', lastName: 'QA', termsAccepted: true, qrToken: alice.participant.qrToken },
     { email: 'qa.alice@hp.com', firstName: 'Alice', lastName: 'QA', termsAccepted: true, sessionToken: bob.sessionToken }
-  ]) assert.throws(() => call('register', payload), error => error.code === 'EMAIL_ALREADY_REGISTERED');
+  ]) assert.throws(() => call('register', { selfieDataUrl: photo, selfieConsent: true, ...payload }), error => error.code === 'EMAIL_ALREADY_REGISTERED');
   assert.equal(tables.get('Sessions').length, sessionCount, 'duplicate email must not mint a session');
   assert.equal(tables.get('Participants').length, 2);
   assert.throws(() => call('session', { sessionToken: alice.participant.qrToken }), e => e.code === 'INVALID_SESSION');

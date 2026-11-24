@@ -46,12 +46,16 @@ try {
     await p.locator('#last-name').fill('QA');
     await p.locator('#email').fill(i ? 'qa.beto@hp.com' : 'qa.ana@hp.com');
     await p.locator('#terms').check();
-    if (i === 1) {
+    {
+      await p.locator('#register-form button[type=submit]').click();
+      await p.locator('#register-error').waitFor({ state: 'visible' });
+      assert.match(await p.locator('#register-error').textContent(), /selfie es obligatoria/);
+      assert.equal(backend.tables.get('Participants').length, i, 'missing selfie never registers');
       await p.locator('#register-selfie-file').setInputFiles(selfieFile);
       await p.locator('#register-selfie-preview').waitFor({ state: 'visible' });
       await p.locator('#register-form button[type=submit]').click();
       await p.locator('#register-error').waitFor({ state: 'visible' });
-      assert.equal(backend.tables.get('Participants').length, 1, 'photo consent required before registration');
+      assert.equal(backend.tables.get('Participants').length, i, 'photo consent required before registration');
       await p.locator('#register-selfie-consent').check();
     }
     await p.locator('#register-form button[type=submit]').click();
@@ -60,15 +64,50 @@ try {
     assert(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
     await p.screenshot({ path: 'test-output/mobile-' + (i + 1) + '-pass.png', fullPage: true });
   }
+  const exportPage = pages[0];
+  await exportPage.waitForFunction(() => !document.getElementById('download-pass').disabled);
+  await exportPage.evaluate(() => {
+    Object.defineProperty(navigator, 'canShare', { configurable: true, value: data => data.files?.[0]?.type === 'image/png' });
+    Object.defineProperty(navigator, 'share', { configurable: true, value: async data => {
+      window.sharedPass = { name: data.files[0].name, type: data.files[0].type, bytes: Array.from(new Uint8Array(await data.files[0].arrayBuffer())) };
+    }});
+  });
+  await exportPage.locator('#download-pass').click();
+  await exportPage.locator('#pass-image-options').waitFor({ state: 'visible' });
+  const shared = await exportPage.evaluate(() => window.sharedPass);
+  assert.equal(shared.type, 'image/png');
+  assert.match(shared.name, /^HP-Kick-Off-27-Quest-P-.+\.png$/);
+  const sharp = require('C:/Users/SEE/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/sharp');
+  const decoded = await sharp(Buffer.from(shared.bytes)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  assert.equal(decoded.info.width, 1080); assert.equal(decoded.info.height, 1350);
+  const jsqr = require('../../../../party-quest-qa-tools/node_modules/jsqr');
+  const qr = jsqr(new Uint8ClampedArray(decoded.data), 1080, 1350);
+  assert.equal(new URL(qr.data).searchParams.get('candidate'), backend.tables.get('Participants')[0].QRToken);
+  await exportPage.reload();
+  await exportPage.waitForFunction(() => !document.getElementById('download-pass').disabled);
+  await exportPage.evaluate(() => Object.defineProperty(navigator, 'share', { configurable: true, value: async () => { throw new DOMException('Canceled', 'AbortError'); }}));
+  await exportPage.locator('#download-pass').click();
+  assert.equal(await exportPage.locator('#pass-image-options').isVisible(), false, 'cancel does not download or open fallback');
+  await exportPage.evaluate(() => Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => false }));
+  await exportPage.locator('#download-pass').click();
+  await exportPage.locator('#pass-image-options').waitFor({ state: 'visible' });
+  const downloadPromise = exportPage.waitForEvent('download');
+  await exportPage.locator('#download-pass-png').click();
+  assert.equal((await downloadPromise).suggestedFilename(), shared.name);
   const rows = backend.tables.get('Participants');
-  assert.equal(rows[0].SelfieUpdatedAt, '');
+  rows[0].SelfieUpdatedAt = '';
+  const photoRows = backend.tables.get('Selfies');
+  photoRows.splice(photoRows.findIndex(row => row.ParticipantID === rows[0].ParticipantID), 1);
+  await pages[0].reload();
+  await pages[0].locator('#view-pass').waitFor({ state: 'visible' });
+  assert.equal(await pages[0].locator('#party-pass').isVisible(), false);
+  assert.equal(await pages[0].locator('#pass-selfie-section').getAttribute('open'), '');
   const originalQr = rows[0].QRToken;
-  await pages[0].getByText('Agregar o cambiar mi selfie', { exact: true }).click();
   await pages[0].locator('#pass-selfie-file').setInputFiles(selfieFile);
   await pages[0].locator('#pass-selfie-preview').waitFor({ state: 'visible' });
   await pages[0].locator('#pass-selfie-consent').check();
   await pages[0].locator('#save-selfie').click();
-  await pages[0].waitForFunction(() => document.getElementById('pass-selfie-status').textContent === 'Tu selfie está guardada.');
+  await pages[0].locator('#party-pass').waitFor({ state: 'visible' });
   assert.equal(rows[0].QRToken, originalQr);
   await pages[0].goto(base + '/?candidate=' + rows[1].QRToken);
   await pages[0].locator('#view-candidate').waitFor({ state: 'visible' });
@@ -106,6 +145,9 @@ try {
   await intruder.locator('#last-name').fill('QA');
   await intruder.locator('#email').fill('QA.ANA@HP.COM');
   await intruder.locator('#terms').check();
+  await intruder.locator('#register-selfie-file').setInputFiles(selfieFile);
+  await intruder.locator('#register-selfie-preview').waitFor({ state: 'visible' });
+  await intruder.locator('#register-selfie-consent').check();
   await intruder.locator('#register-form button[type=submit]').click();
   await intruder.locator('#register-error').waitFor({ state: 'visible' });
   assert.match(await intruder.locator('#register-error').textContent(), /ya está registrado/);

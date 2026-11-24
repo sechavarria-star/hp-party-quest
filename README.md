@@ -15,7 +15,7 @@ GitHub repository
 ## Qué incluye
 
 - Registro con nombre, apellido, email y consentimiento.
-- Selfie opcional con consentimiento separado; puede agregarse o cambiarse desde el pase.
+- Selfie obligatoria con consentimiento separado; puede agregarse o cambiarse desde el pase.
 - Confirmación personalizada con nombre del votante y foto del candidato, visible solo para sesiones activas.
 - Rechazo del email duplicado: nunca entrega una sesión nueva por conocer el email o el QR público. La identidad se conserva en el navegador original; recuperar acceso requiere intervención de la organización.
 - Sesión persistente en `localStorage`; en Sheets solo se guarda SHA-256.

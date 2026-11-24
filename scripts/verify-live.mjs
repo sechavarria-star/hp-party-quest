@@ -20,7 +20,7 @@ healthUrl.searchParams.set('action', 'health');
 healthUrl.searchParams.set('frontend', frontendUrl);
 const health = await getText(healthUrl.href);
 const body = JSON.parse(health.text);
-if (!body.ok || body.data?.service !== 'HP Party Quest API' || body.data?.version !== '2.2.0' || !body.data?.runtimeReady) {
+if (!body.ok || body.data?.service !== 'HP Party Quest API' || body.data?.version !== '2.2.1' || !body.data?.runtimeReady) {
   throw new Error(`Backend health verification failed: ${health.text}`);
 }
 
