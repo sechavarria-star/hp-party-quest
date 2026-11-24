@@ -13,3 +13,7 @@ Pruebas locales del 24/11/2026:
 - La consigna QA temporal conserva el estado de borrador de la consigna real y restaura el ID anterior al cerrar o vencer.
 
 El usuario confirmó el 21/11/2026 que dos celulares muestran sus QR. La captura real de selfies y el voto cruzado con la versión 2.2.0 requieren validación separada. No confundir navegadores móviles emulados con celulares físicos.
+
+Prueba API publicada del 24/11/2026: dos identidades QA, guardado y lectura de JPG (incluyendo una foto repartida en varias celdas), bloqueo de lectura sin sesión, actualización propia con ID ajeno ignorado, email duplicado bloqueado y dos votos cruzados confirmados por lectura de Votes. Los votos pertenecen exclusivamente a CH-QA-20261120. No se usaron fotos reales de asistentes.
+
+La consigna temporal se cierra y se restaura la configuración anterior al completar estas comprobaciones. La consigna real conserva su estado anterior.

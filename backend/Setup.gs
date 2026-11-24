@@ -39,7 +39,7 @@ function ensureRuntimeReady_(frontendUrl) {
     Object.keys(HPQ_SCHEMA).forEach(function (name) { ensureSheet_(ss, name, HPQ_SCHEMA[name]); });
     seedConfig_();
     seedChallenge_();
-    prepareLiveQa_();
+    restoreLiveQa_();
     formatSheets_();
 
     let serviceUrl = '';
