@@ -77,6 +77,15 @@ input:focus { border-color: var(--hp-blue); box-shadow: 0 0 0 3px rgba(0,150,214
 .candidate-card > p:first-child { margin-top: 0; color: var(--muted); }
 .avatar { width: 78px; height: 78px; margin: 14px auto; border-radius: 50%; display: grid; place-items: center; color: white; background: linear-gradient(145deg, var(--hp-blue), var(--navy-2)); font-size: 25px; font-weight: 800; }
 .candidate-card h3 { margin: 6px 0; color: var(--navy); font-size: 28px; }
+.candidate-photo { display: block; width: 180px; height: 180px; max-width: 100%; margin: 14px auto; object-fit: cover; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 18px rgba(8,27,51,.14); }
+.selfie-section { min-width: 0; margin: 18px 0; padding: 16px; border: 1px solid var(--line); border-radius: 3px; }
+.selfie-section legend, .selfie-update summary { color: var(--navy); font-size: 14px; font-weight: 700; }
+.selfie-update summary { cursor: pointer; margin-bottom: 14px; }
+.selfie-help { margin-top: 0; text-align: left; }
+.selfie-picker { margin-bottom: 12px; cursor: pointer; font-size: 13px; text-align: center; }
+.selfie-preview { display: block; margin: 8px auto 12px; width: 120px; height: 120px; object-fit: cover; border-radius: 50%; }
+.selfie-remove { display: block; border: 0; background: transparent; color: #8d2626; text-decoration: underline; margin: 8px auto 16px; font-size: 13px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .identity-note { padding: 10px 0; color: var(--muted); font-size: 13px; }
 .celebration { margin: 0 auto 18px; width: 90px; height: 90px; display: grid; place-items: center; color: var(--red); background: #fff0f0; border-radius: 50%; font-size: 48px; }
 .loader { width: 44px; height: 44px; margin: 8px auto 22px; border: 4px solid #dceaf4; border-top-color: var(--hp-blue); border-radius: 50%; animation: spin .8s linear infinite; }

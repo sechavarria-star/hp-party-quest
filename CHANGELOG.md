@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.2.0 — 2026-11-24
+
+- Selfie opcional al registrarse, con vista previa, recorte cuadrado y compresión local.
+- Participantes ya registrados pueden agregar o reemplazar su foto sin cambiar su QR.
+- Confirmación personalizada con el nombre del votante y la foto del candidato.
+- Fotos en la hoja privada Selfies, separadas en celdas de tamaño limitado; el QR no contiene la foto.
+- El backend entrega fotos solo a sesiones activas y actualiza únicamente la del participante autenticado.
+- Consigna temporal de aceptación separada, autorizada por el organizador, con restauración de la consigna previa al cerrar o vencer.
+
 ## 2.1.1 — 2026-11-20
 
 ### Identidad visual actualizada el 21/11/2026

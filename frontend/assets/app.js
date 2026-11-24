@@ -7,6 +7,7 @@
   const candidateToken = new URLSearchParams(location.search).get('candidate') || '';
   const views = [...document.querySelectorAll('.view')];
   const $ = (id) => document.getElementById(id);
+  const selfieState = { register: { data: '', processing: false, generation: 0 }, pass: { data: '', processing: false, generation: 0 } };
 
   document.title = config.EVENT_NAME || "HP Kick Off '27 Quest";
   $('hero-tagline').textContent = config.EVENT_TAGLINE || 'Conectate. Explorá. Votá.';
@@ -81,10 +82,68 @@
     return String(name || 'HP').split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
   }
 
+  async function prepareSelfie(file) {
+    if (!file || !file.type.startsWith('image/') || file.size > 20 * 1024 * 1024) throw new Error('Elegí una foto de hasta 20 MB.');
+    const url = URL.createObjectURL(file);
+    try {
+      const image = new Image();
+      await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(new Error('No pudimos abrir esa foto. Probá con JPG o PNG.')); image.src = url; });
+      for (const size of [480, 360, 240]) {
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        const side = Math.min(image.naturalWidth, image.naturalHeight);
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(image, (image.naturalWidth - side) / 2, (image.naturalHeight - side) / 2, side, side, 0, 0, size, size);
+        for (const quality of [0.84, 0.7, 0.55]) {
+          const data = canvas.toDataURL('image/jpeg', quality);
+          if (data.length <= 160000) return data;
+        }
+      }
+      throw new Error('La foto es demasiado grande. Volvé a tomarla.');
+    } finally { URL.revokeObjectURL(url); }
+  }
+
+  function wireSelfiePicker(prefix) {
+    const state = selfieState[prefix];
+    const preview = $(prefix + '-selfie-preview');
+    const error = $(prefix + '-selfie-error');
+    const input = $(prefix + '-selfie-file');
+    function clear() {
+      state.generation += 1; state.data = ''; state.processing = false;
+      preview.hidden = true; preview.removeAttribute('src'); input.value = '';
+      $(prefix + '-selfie-remove').hidden = true;
+      $(prefix + '-selfie-consent-row').hidden = true;
+      $(prefix + '-selfie-consent').checked = false;
+      error.hidden = true;
+    }
+    $(prefix + '-selfie-remove').addEventListener('click', clear);
+    input.addEventListener('change', async () => {
+      const file = input.files[0];
+      clear();
+      if (!file) return;
+      const generation = state.generation;
+      state.processing = true;
+      try {
+        const data = await prepareSelfie(file);
+        if (generation !== state.generation) return;
+        state.data = data; preview.src = data; preview.hidden = false;
+        $(prefix + '-selfie-remove').hidden = false;
+        $(prefix + '-selfie-consent-row').hidden = false;
+      } catch (e) {
+        if (generation !== state.generation) return;
+        error.textContent = safeMessage(e); error.hidden = false;
+      } finally { if (generation === state.generation) state.processing = false; }
+    });
+  }
+  wireSelfiePicker('register');
+  wireSelfiePicker('pass');
+
   function renderPass(participant) {
     state.participant = participant;
     $('pass-name').textContent = participant.displayName;
     $('pass-id').textContent = participant.participantId;
+    $('pass-selfie-status').textContent = participant.hasSelfie ? 'Tu selfie está guardada. Podés reemplazarla cuando quieras.' : 'Todavía no agregaste una selfie. Es opcional.';
     const holder = $('qr-code');
     holder.innerHTML = '';
     window.HPQ_QR.draw(holder, candidateUrl(participant.qrToken), { size: 200, margin: 4 });
@@ -105,15 +164,24 @@
 
   async function loadCandidate() {
     try {
-      const data = await api('candidate', { qrToken: candidateToken });
+      const data = await api('candidate', { qrToken: candidateToken, sessionToken: state.sessionToken });
       state.candidate = data;
       $('candidate-name').textContent = data.candidate.displayName;
       $('candidate-initials').textContent = initials(data.candidate.displayName);
+      $('candidate-prompt').textContent = state.participant
+        ? `${state.participant.firstName || state.participant.displayName}, estás por votar a`
+        : 'Estás por votar a';
+      const photo = $('candidate-photo');
+      const hasPhoto = /^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(data.selfieDataUrl || '');
+      photo.hidden = !hasPhoto;
+      $('candidate-initials').hidden = hasPhoto;
+      if (hasPhoto) { photo.src = data.selfieDataUrl; photo.alt = 'Foto de ' + data.candidate.displayName; }
+      else photo.removeAttribute('src');
       $('challenge-name').textContent = data.challenge.name;
       $('challenge-description').textContent = data.challenge.description || '';
       $('identity-note').textContent = state.participant
         ? `Vas a votar como ${state.participant.displayName}. Tenés un voto para esta consigna.`
-        : 'Primero registrate para poder confirmar el voto.';
+        : 'Primero registrate para ver la foto y confirmar el voto.';
       $('vote-button').textContent = state.participant ? 'Confirmar mi voto' : 'Registrarme para votar';
       show('view-candidate');
     } catch (error) {
@@ -157,6 +225,14 @@
       registrationSource: 'GITHUB_PAGES',
       frontendBaseUrl: frontendBaseUrl()
     };
+    if (selfieState.register.processing) {
+      errorNode.textContent = 'Esperá un momento mientras preparamos tu foto.'; errorNode.hidden = false; return;
+    }
+    payload.selfieDataUrl = selfieState.register.data;
+    payload.selfieConsent = $('register-selfie-consent').checked;
+    if (payload.selfieDataUrl && !payload.selfieConsent) {
+      errorNode.textContent = 'Aceptá guardar y mostrar tu selfie o quitá la foto para continuar.'; errorNode.hidden = false; return;
+    }
     if (!payload.firstName || !payload.lastName || !payload.email || !payload.termsAccepted) {
       errorNode.textContent = 'Completá todos los campos y aceptá el consentimiento.';
       errorNode.hidden = false;
@@ -174,6 +250,22 @@
     } finally {
       setBusy(button, false);
     }
+  });
+
+  $('save-selfie').addEventListener('click', async () => {
+    const error = $('pass-selfie-error');
+    error.hidden = true;
+    if (selfieState.pass.processing || !selfieState.pass.data || !$('pass-selfie-consent').checked) {
+      error.textContent = 'Elegí una selfie y aceptá guardarla y mostrarla antes de continuar.'; error.hidden = false; return;
+    }
+    const button = $('save-selfie');
+    setBusy(button, true, 'Guardando selfie…');
+    try {
+      const data = await api('saveSelfie', { sessionToken: state.sessionToken, selfieDataUrl: selfieState.pass.data, selfieConsent: true });
+      state.participant = data.participant;
+      $('pass-selfie-status').textContent = 'Tu selfie está guardada.';
+    } catch (e) { error.textContent = safeMessage(e); error.hidden = false; }
+    finally { setBusy(button, false); }
   });
 
   $('vote-button').addEventListener('click', async () => {

@@ -1,5 +1,6 @@
 const HPQ_SCHEMA = Object.freeze({
-  Participants: ['ParticipantID','FirstName','LastName','DisplayName','Email','EmailNormalized','AuthToken','QRToken','QRUrl','QRImageUrl','RegistrationDate','RegistrationSource','Status','TermsAccepted','LastActivityAt','Notes'],
+  Participants: ['ParticipantID','FirstName','LastName','DisplayName','Email','EmailNormalized','AuthToken','QRToken','QRUrl','QRImageUrl','RegistrationDate','RegistrationSource','Status','TermsAccepted','LastActivityAt','Notes','SelfieConsentAt','SelfieUpdatedAt'],
+  Selfies: ['ParticipantID','MimeType','Data1','Data2','Data3','Data4','Data5','ConsentAt','UpdatedAt'],
   Challenges: ['ChallengeID','ChallengeName','Description','Type','Status','StartDateTime','EndDateTime','MaxVotesPerParticipant','AllowSelfVote','ShowLiveRanking','WinnerCount','TieBreakerRule','PublicMessage','CreatedAt','UpdatedAt'],
   Votes: ['VoteID','ChallengeID','VoterParticipantID','CandidateParticipantID','VoteKey','VotedAt','Valid','ValidationResult','SessionID','UserAgent','Source','InvalidatedAt','InvalidatedBy','AdminNotes'],
   Sessions: ['SessionID','ParticipantID','SessionTokenHash','CreatedAt','ExpiresAt','LastUsedAt','Status','UserAgent','RegistrationSource','RevokedAt','RevokedReason'],
@@ -29,7 +30,7 @@ function setupProject() {
 function ensureRuntimeReady_(frontendUrl) {
   const cache = CacheService.getScriptCache();
   const cacheKey = 'hpq.runtime.' + HPQ.VERSION;
-  const cached = !frontendUrl && cache.get(cacheKey);
+  const cached = !frontendUrl && !liveQaExpired_() && cache.get(cacheKey);
   if (cached) return JSON.parse(cached);
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
@@ -38,6 +39,7 @@ function ensureRuntimeReady_(frontendUrl) {
     Object.keys(HPQ_SCHEMA).forEach(function (name) { ensureSheet_(ss, name, HPQ_SCHEMA[name]); });
     seedConfig_();
     seedChallenge_();
+    prepareLiveQa_();
     formatSheets_();
 
     let serviceUrl = '';
@@ -146,7 +148,7 @@ function formatSheets_() {
     if (!sheet) return;
     const columns = HPQ_SCHEMA[name].length;
     sheet.getRange(1, 1, 1, columns).setBackground('#102a4c').setFontColor('#ffffff').setFontWeight('bold');
-    sheet.autoResizeColumns(1, Math.min(columns, 16));
+    if (name !== 'Selfies') sheet.autoResizeColumns(1, Math.min(columns, 16));
 
     // The workbook uses native Google Sheets tables. A basic range filter
     // cannot overlap a native table, even partially; attempting to add one
@@ -168,4 +170,67 @@ function upsertConfig_(key, value) {
   const hit = findOne_('Config', 'Key', key);
   if (hit) updateCell_('Config', hit.rowNumber, 'Value', value);
   else appendObject_('Config', { Key: key, Value: value, Description: '' });
+}
+
+// Temporary acceptance-test setup; no public admin action or caller input.
+function prepareLiveQa_() {
+  const id = 'CH-QA-20261120';
+  const properties = PropertiesService.getScriptProperties();
+  if (properties.getProperty('HPQ_QA_PREVIOUS_CHALLENGE') !== null) {
+    if (liveQaExpired_()) restoreLiveQa_();
+    return;
+  }
+  const previous = String(getConfig_().ACTIVE_CHALLENGE_ID || '');
+  if (!findOne_('Challenges', 'ChallengeID', id)) {
+    appendObject_('Challenges', {
+      ChallengeID: id, ChallengeName: 'PRUEBA · Anteojos más cool',
+      Description: 'Prueba técnica de registro, QR y voto. No cuenta para el evento.',
+      Type: 'VOTE_PERSON', Status: 'OPEN', StartDateTime: '', EndDateTime: '',
+      MaxVotesPerParticipant: 1, AllowSelfVote: false, ShowLiveRanking: false,
+      WinnerCount: 0, TieBreakerRule: 'EARLIEST_LAST_VOTE',
+      PublicMessage: 'Solo prueba técnica', CreatedAt: new Date(), UpdatedAt: new Date()
+    });
+  }
+  properties.setProperty('HPQ_QA_PREVIOUS_CHALLENGE', previous);
+  properties.setProperty('HPQ_QA_EXPIRES_AT', String(Date.now() + 45 * 60 * 1000));
+  upsertConfig_('ACTIVE_CHALLENGE_ID', id);
+  audit_('QA_OPENED', '', id, '', 'ACCEPTED', { previousChallenge: previous }, '', 'INFO');
+}
+
+function liveQaExpired_() {
+  const properties = PropertiesService.getScriptProperties();
+  return properties.getProperty('HPQ_QA_PREVIOUS_CHALLENGE') !== null &&
+    !properties.getProperty('HPQ_QA_RESTORED_AT') &&
+    Number(properties.getProperty('HPQ_QA_EXPIRES_AT') || 0) <= Date.now();
+}
+
+function restoreLiveQa_() {
+  const properties = PropertiesService.getScriptProperties();
+  const previous = properties.getProperty('HPQ_QA_PREVIOUS_CHALLENGE');
+  if (previous === null || properties.getProperty('HPQ_QA_RESTORED_AT')) return;
+  const id = 'CH-QA-20261120';
+  if (String(getConfig_().ACTIVE_CHALLENGE_ID) === id) upsertConfig_('ACTIVE_CHALLENGE_ID', previous);
+  const hit = findOne_('Challenges', 'ChallengeID', id);
+  if (hit) updateCell_('Challenges', hit.rowNumber, 'Status', 'CLOSED');
+  properties.setProperty('HPQ_QA_RESTORED_AT', new Date().toISOString());
+  CacheService.getScriptCache().remove('hpq.runtime.' + HPQ.VERSION);
+  audit_('QA_CLOSED', '', id, '', 'RESTORED', {}, '', 'INFO');
+}
+
+function liveQaSummary_() {
+  const id = 'CH-QA-20261120';
+  const qa = objects_('Participants').filter(function (row) {
+    return /^QA (Navegador|API [AB]|Celular [AB])$/.test(String(row.data.FirstName || ''));
+  });
+  const ids = qa.map(function (row) { return String(row.data.ParticipantID); });
+  return {
+    challengeId: id,
+    testParticipants: qa.length,
+    active: String(getConfig_().ACTIVE_CHALLENGE_ID) === id,
+    expiresAt: Number(PropertiesService.getScriptProperties().getProperty('HPQ_QA_EXPIRES_AT') || 0),
+    acceptedVotes: objects_('Votes').filter(function (row) { return String(row.data.ChallengeID) === id && toBoolean_(row.data.Valid); }).length,
+    testVotes: objects_('Votes').filter(function (row) {
+      return String(row.data.ChallengeID) === id && ids.indexOf(String(row.data.VoterParticipantID)) >= 0 && toBoolean_(row.data.Valid);
+    }).length
+  };
 }

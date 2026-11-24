@@ -15,6 +15,8 @@ GitHub repository
 ## Qué incluye
 
 - Registro con nombre, apellido, email y consentimiento.
+- Selfie opcional con consentimiento separado; puede agregarse o cambiarse desde el pase.
+- Confirmación personalizada con nombre del votante y foto del candidato, visible solo para sesiones activas.
 - Rechazo del email duplicado: nunca entrega una sesión nueva por conocer el email o el QR público. La identidad se conserva en el navegador original; recuperar acceso requiere intervención de la organización.
 - Sesión persistente en `localStorage`; en Sheets solo se guarda SHA-256.
 - QR generado localmente en el navegador, sin CDN ni servicio de terceros.
@@ -85,6 +87,7 @@ La especificación completa está en [`docs/DEPLOY.md`](docs/DEPLOY.md). Las pru
 - Las mutaciones usan `POST` con contenido `application/x-www-form-urlencoded`, evitando el preflight CORS que suele complicar Apps Script.
 - El backend vuelve a validar sesión, challenge, candidato, auto-voto y duplicados; no confía en el navegador.
 - No se guardan IP, geolocalización ni datos innecesarios.
+- Las selfies se guardan en la misma base privada, sin crear enlaces de imágenes públicos. Ver [Selfies](docs/SELFIES.md).
 
 ## Alcance
 

@@ -7,13 +7,20 @@ import { resolve } from 'node:path';
 
 export function createBackend() {
   const tables = new Map();
+  const properties = new Map([['HPQ_SPREADSHEET_ID', 'QA_SPREADSHEET']]);
+  const cache = new Map();
   let locked = false;
   const context = vm.createContext({
-    console: { log() {}, error() {} },
-    PropertiesService: { getScriptProperties: () => ({ getProperty: () => 'QA_SPREADSHEET' }) },
+    console: { log() {}, error() {}, warn() {} },
+    PropertiesService: { getScriptProperties: () => ({
+      getProperty: key => properties.has(key) ? properties.get(key) : null,
+      setProperty: (key, value) => properties.set(key, String(value))
+    }) },
+    CacheService: { getScriptCache: () => ({ get: key => cache.get(key) || null, put: (key, value) => cache.set(key, value), remove: key => cache.delete(key) }) },
     Utilities: {
       getUuid: () => crypto.randomUUID(),
       base64EncodeWebSafe: value => Buffer.from(value).toString('base64url'),
+      base64Decode: value => [...Buffer.from(value, 'base64')],
       computeDigest: (_, value) => [...crypto.createHash('sha256').update(value).digest()],
       DigestAlgorithm: { SHA_256: 'SHA_256' }, Charset: { UTF_8: 'UTF-8' }
     },
@@ -22,17 +29,40 @@ export function createBackend() {
       releaseLock() { locked = false; }
     }) }
   });
-  for (const file of ['Code.gs', 'Security.gs', 'Data.gs', 'Setup.gs'])
+  for (const file of ['Code.gs', 'Security.gs', 'Data.gs', 'Setup.gs', 'Selfies.gs'])
     vm.runInContext(fs.readFileSync('backend/' + file, 'utf8'), context, { filename: file });
   const schema = vm.runInContext('HPQ_SCHEMA', context);
   for (const key of Object.keys(schema)) tables.set(key, []);
   context.objects_ = name => tables.get(name).map((data, i) => ({ data, rowNumber: i + 2 }));
   context.appendObject_ = (name, object) => tables.get(name).push({ ...object });
   context.updateCell_ = (name, row, field, value) => { tables.get(name)[row - 2][field] = value; };
+  context.sheet_ = name => {
+    assert.equal(name, 'Selfies', 'mock direct sheet access is reserved for photo row storage');
+    return {
+      getLastRow: () => tables.get(name).length + 1,
+      getRange(row, col, count = 1, columns = 1) {
+        return {
+          createTextFinder(target) {
+            return {
+              matchEntireCell() { return this; }, useRegularExpression() { return this; },
+              findNext() {
+                const i = tables.get(name).findIndex(data => String(data.ParticipantID) === String(target));
+                return i < 0 ? null : { getRow: () => i + 2 };
+              }
+            };
+          },
+          getValues: () => Array.from({ length: count }, (_, i) => schema[name].slice(col - 1, col - 1 + columns).map(key => tables.get(name)[row - 2 + i][key] || '')),
+          setValues: values => values.forEach((items, i) => {
+            items.forEach((value, j) => { tables.get(name)[row - 2 + i][schema[name][col - 1 + j]] = value; });
+          })
+        };
+      }
+    };
+  };
   context.seedConfig_();
   context.seedChallenge_();
   context.upsertConfig_('FRONTEND_BASE_URL', 'https://sechavarria-star.github.io/hp-party-quest/');
-  return { context, tables, call(action, payload) { return context.routeAction_(action, payload); } };
+  return { context, tables, properties, call(action, payload) { return context.routeAction_(action, payload); } };
 }
 
 export function runSecurityTests() {

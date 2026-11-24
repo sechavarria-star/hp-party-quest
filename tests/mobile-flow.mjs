@@ -6,6 +6,7 @@ import { createRequire } from 'node:module';
 import { createBackend } from './security-regression.mjs';
 const require = createRequire(import.meta.url);
 const { chromium } = require('C:/Users/SEE/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const selfieFile = path.resolve('tests/fixtures/selfie-qa.jpg');
 const backend = createBackend();
 const api = 'https://script.google.com/macros/s/qa-isolated/exec';
 const server = http.createServer((req, res) => {
@@ -45,6 +46,14 @@ try {
     await p.locator('#last-name').fill('QA');
     await p.locator('#email').fill(i ? 'qa.beto@hp.com' : 'qa.ana@hp.com');
     await p.locator('#terms').check();
+    if (i === 1) {
+      await p.locator('#register-selfie-file').setInputFiles(selfieFile);
+      await p.locator('#register-selfie-preview').waitFor({ state: 'visible' });
+      await p.locator('#register-form button[type=submit]').click();
+      await p.locator('#register-error').waitFor({ state: 'visible' });
+      assert.equal(backend.tables.get('Participants').length, 1, 'photo consent required before registration');
+      await p.locator('#register-selfie-consent').check();
+    }
     await p.locator('#register-form button[type=submit]').click();
     await p.locator('#view-pass').waitFor({ state: 'visible' });
     assert.equal(await p.locator('#qr-code canvas').count(), 1);
@@ -52,9 +61,23 @@ try {
     await p.screenshot({ path: 'test-output/mobile-' + (i + 1) + '-pass.png', fullPage: true });
   }
   const rows = backend.tables.get('Participants');
+  assert.equal(rows[0].SelfieUpdatedAt, '');
+  const originalQr = rows[0].QRToken;
+  await pages[0].getByText('Agregar o cambiar mi selfie', { exact: true }).click();
+  await pages[0].locator('#pass-selfie-file').setInputFiles(selfieFile);
+  await pages[0].locator('#pass-selfie-preview').waitFor({ state: 'visible' });
+  await pages[0].locator('#pass-selfie-consent').check();
+  await pages[0].locator('#save-selfie').click();
+  await pages[0].waitForFunction(() => document.getElementById('pass-selfie-status').textContent === 'Tu selfie está guardada.');
+  assert.equal(rows[0].QRToken, originalQr);
   await pages[0].goto(base + '/?candidate=' + rows[1].QRToken);
   await pages[0].locator('#view-candidate').waitFor({ state: 'visible' });
   assert.match(await pages[0].locator('#identity-note').textContent(), /Ana/);
+  assert.equal(await pages[0].locator('#candidate-prompt').textContent(), 'Ana, estás por votar a');
+  assert.equal(await pages[0].locator('#candidate-name').textContent(), 'Beto Q.');
+  await pages[0].locator('#candidate-photo').waitFor({ state: 'visible' });
+  assert(await pages[0].locator('#candidate-photo').evaluate(image => image.complete && image.naturalWidth > 0));
+  await pages[0].screenshot({ path: 'test-output/mobile-selfie-confirmation.png', fullPage: true });
   await pages[0].locator('#vote-button').click();
   await pages[0].locator('#view-voted').waitFor({ state: 'visible' });
   await pages[0].screenshot({ path: 'test-output/mobile-vote-confirmed.png', fullPage: true });
@@ -75,6 +98,9 @@ try {
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify(result) });
   });
   const intruder = await third.newPage();
+  await intruder.goto(base + '/?candidate=' + rows[1].QRToken);
+  await intruder.locator('#view-candidate').waitFor({ state: 'visible' });
+  assert.equal(await intruder.locator('#candidate-photo').isVisible(), false, 'anonymous visitor cannot see the photo');
   await intruder.goto(base);
   await intruder.locator('#first-name').fill('Intruso');
   await intruder.locator('#last-name').fill('QA');

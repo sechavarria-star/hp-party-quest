@@ -1,7 +1,7 @@
 const HPQ = Object.freeze({
   SPREADSHEET_ID: PropertiesService.getScriptProperties().getProperty('HPQ_SPREADSHEET_ID') || '',
-  VERSION: '2.1.1',
-  MAX_PAYLOAD_CHARS: 12000
+  VERSION: '2.2.0',
+  MAX_PAYLOAD_CHARS: 190000
 });
 
 function doGet(e) {
@@ -16,6 +16,7 @@ function doGet(e) {
       spreadsheetConfigured: Boolean(HPQ.SPREADSHEET_ID),
       runtimeReady: bootstrap.ok,
       issues: bootstrap.issues,
+      qa: liveQaSummary_(),
       timestamp: new Date().toISOString()
     }
   });
@@ -53,7 +54,8 @@ function routeAction_(action, payload) {
     register: registerParticipant_,
     session: getSessionParticipant_,
     candidate: getCandidate_,
-    vote: castVote_
+    vote: castVote_,
+    saveSelfie: updateParticipantSelfie_
   };
   if (!routes[action]) throw appError_('UNKNOWN_ACTION', 'La operación solicitada no existe.');
   return routes[action](payload);
@@ -67,6 +69,7 @@ function registerParticipant_(payload) {
   const email = normalizeEmail_(payload.email);
   if (payload.termsAccepted !== true) throw appError_('TERMS_REQUIRED', 'Tenés que aceptar el consentimiento para registrarte.');
   validateEmailPolicy_(email);
+  const selfie = validateSelfie_(payload.selfieDataUrl, payload.selfieConsent);
 
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
@@ -104,8 +107,11 @@ function registerParticipant_(payload) {
         Status: 'ACTIVE',
         TermsAccepted: true,
         LastActivityAt: now,
+        SelfieConsentAt: selfie ? now : '',
+        SelfieUpdatedAt: selfie ? now : '',
         Notes: ''
       };
+      if (selfie) writeSelfie_(participantId, selfie, now);
       appendObject_('Participants', participant);
       audit_('REGISTRATION_CREATED', participantId, '', '', 'ACCEPTED', { source: participant.RegistrationSource }, '', 'INFO');
     }
@@ -133,8 +139,14 @@ function getCandidate_(payload) {
   const candidateHit = findOne_('Participants', 'QRToken', qrToken);
   if (!candidateHit || String(candidateHit.data.Status || '').toUpperCase() !== 'ACTIVE') throw appError_('INVALID_CANDIDATE', 'No encontramos un participante activo para este QR.');
   const challenge = getChallenge_(String(payload.challengeId || ''));
+  let selfieDataUrl = '';
+  if (payload.sessionToken) {
+    authenticateSession_(payload.sessionToken, false);
+    selfieDataUrl = readSelfie_(candidateHit.data.ParticipantID);
+  }
   return {
     candidate: publicParticipant_(candidateHit.data),
+    selfieDataUrl: selfieDataUrl,
     challenge: publicChallenge_(challenge)
   };
 }
@@ -213,7 +225,9 @@ function getChallenge_(requestedId) {
 function publicParticipant_(row) {
   return {
     participantId: String(row.ParticipantID),
+    firstName: String(row.FirstName || ''),
     displayName: String(row.DisplayName || (row.FirstName + ' ' + String(row.LastName || '').charAt(0) + '.')),
+    hasSelfie: Boolean(row.SelfieUpdatedAt),
     qrToken: String(row.QRToken)
   };
 }

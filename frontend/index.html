@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#081b33">
   <meta name="description" content="Registro y desafíos de HP Kick Off '27 Quest">
   <title>HP Kick Off '27 Quest</title>
-  <link rel="stylesheet" href="assets/styles.css?v=kickoff27-1">
+  <link rel="stylesheet" href="assets/styles.css?v=selfie-2.2.0">
 </head>
 <body>
   <div class="ambient ambient-one"></div>
@@ -47,6 +47,16 @@
             <label>Apellido<input id="last-name" name="lastName" autocomplete="family-name" maxlength="60" required></label>
           </div>
           <label>Email<input id="email" name="email" type="email" autocomplete="email" maxlength="160" placeholder="nombre@hp.com" required></label>
+          <fieldset class="selfie-section">
+            <legend>Tu selfie <span class="muted">(opcional)</span></legend>
+            <p class="tiny selfie-help">Quienes participen podrán verla al escanear tu QR para confirmar a quién votan.</p>
+            <label for="register-selfie-file" class="button button-secondary selfie-picker">Sacar o cargar selfie</label>
+            <input id="register-selfie-file" class="visually-hidden" type="file" accept="image/*" capture="user">
+            <img id="register-selfie-preview" class="selfie-preview" alt="Vista previa de tu selfie" width="120" height="120" hidden>
+            <button id="register-selfie-remove" class="selfie-remove" type="button" hidden>Quitar foto</button>
+            <label id="register-selfie-consent-row" class="check-row" hidden><input id="register-selfie-consent" type="checkbox"><span>Acepto guardar mi selfie y mostrarla a participantes registrados que escaneen mi QR durante el juego.</span></label>
+            <p id="register-selfie-error" class="form-error" role="alert" hidden></p>
+          </fieldset>
           <label class="check-row"><input id="terms" name="terms" type="checkbox" required><span>Acepto usar mis datos para la dinámica del evento y entiendo que serán tratados según la política definida por la organización.</span></label>
           <p id="register-error" class="form-error" role="alert" hidden></p>
           <button class="button button-primary" type="submit"><span>Generar mi QR</span><span aria-hidden="true">→</span></button>
@@ -70,6 +80,17 @@
           <button id="refresh-pass" class="button button-secondary" type="button">Actualizar identidad</button>
         </div>
         <p class="tiny">No uses modo incógnito. Abrí siempre el juego en este mismo navegador.</p>
+        <details class="selfie-section selfie-update">
+          <summary>Agregar o cambiar mi selfie</summary>
+          <p id="pass-selfie-status" class="tiny selfie-help"></p>
+          <label for="pass-selfie-file" class="button button-secondary selfie-picker">Sacar o cargar selfie</label>
+          <input id="pass-selfie-file" class="visually-hidden" type="file" accept="image/*" capture="user">
+          <img id="pass-selfie-preview" class="selfie-preview" alt="Vista previa de tu nueva selfie" width="120" height="120" hidden>
+          <button id="pass-selfie-remove" class="selfie-remove" type="button" hidden>Quitar selección</button>
+          <label id="pass-selfie-consent-row" class="check-row" hidden><input id="pass-selfie-consent" type="checkbox"><span>Acepto guardar mi selfie y mostrarla a participantes registrados que escaneen mi QR durante el juego.</span></label>
+          <p id="pass-selfie-error" class="form-error" role="alert" hidden></p>
+          <button id="save-selfie" class="button button-primary" type="button">Guardar mi selfie</button>
+        </details>
       </article>
 
       <article id="view-candidate" class="panel view" hidden>
@@ -78,8 +99,9 @@
           <div><p class="kicker">CHALLENGE ACTIVO</p><h2 id="challenge-name">Anteojos más cool</h2></div>
         </div>
         <div class="candidate-card">
-          <p>Estás por votar a</p>
+          <p id="candidate-prompt">Estás por votar a</p>
           <div class="avatar" id="candidate-initials" aria-hidden="true">HP</div>
+          <img id="candidate-photo" class="candidate-photo" alt="" width="180" height="180" hidden>
           <h3 id="candidate-name">Participante</h3>
           <p id="challenge-description" class="muted"></p>
         </div>
@@ -111,8 +133,8 @@
   </main>
 
   <footer><span>HP Kick Off '27 Quest</span><span>Built for people to connect</span></footer>
-  <script src="config.js?v=kickoff27-1"></script>
+  <script src="config.js?v=selfie-2.2.0"></script>
   <script src="assets/vendor/hpq-qr.js?v=2.1.1"></script>
-  <script src="assets/app.js?v=kickoff27-1" defer></script>
+  <script src="assets/app.js?v=selfie-2.2.0" defer></script>
 </body>
 </html>
