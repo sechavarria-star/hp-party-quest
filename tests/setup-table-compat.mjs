@@ -55,6 +55,7 @@ const spreadsheet = {
 
 context.spreadsheet_ = () => spreadsheet;
 context.headers_ = sheet => [...sheet.headers];
+context.refreshDashboardSafely_ = () => true;
 context.seedConfig_ = () => {};
 context.seedChallenge_ = () => {};
 context.validateProject = () => ({ ok: true });

@@ -16,6 +16,7 @@ function setupProject() {
   seedConfig_();
   seedChallenge_();
   formatSheets_();
+  refreshDashboardSafely_();
   const report = validateProject();
   console.log(JSON.stringify(report, null, 2));
   return report;
@@ -56,6 +57,7 @@ function ensureRuntimeReady_(frontendUrl) {
         upsertConfig_('FRONTEND_BASE_URL', requestedFrontend);
       }
     }
+    refreshDashboardSafely_();
     const report = validateProject();
     if (report.ok) cache.put(cacheKey, JSON.stringify(report), 300);
     return report;
@@ -70,6 +72,7 @@ function validateProject() {
   Object.keys(HPQ_SCHEMA).forEach(function (name) {
     const sheet = ss.getSheetByName(name);
     if (!sheet) { issues.push('Falta la hoja ' + name); return; }
+    if (name === 'Dashboard') return; // Presentation sheet, not a row-1 data table.
     const actual = headers_(sheet);
     HPQ_SCHEMA[name].forEach(function (header) {
       if (actual.indexOf(header) < 0) issues.push(name + ': falta la columna ' + header);
@@ -84,6 +87,7 @@ function validateProject() {
 function ensureSheet_(ss, name, requiredHeaders) {
   let sheet = ss.getSheetByName(name);
   if (!sheet) sheet = ss.insertSheet(name);
+  if (name === 'Dashboard') return;
   const current = headers_(sheet);
   if (!current.length || current.every(function (item) { return !item; })) {
     sheet.getRange(1, 1, 1, requiredHeaders.length).setValues([requiredHeaders]);
@@ -145,7 +149,7 @@ function formatSheets_() {
   const ss = spreadsheet_();
   Object.keys(HPQ_SCHEMA).forEach(function (name) {
     const sheet = ss.getSheetByName(name);
-    if (!sheet) return;
+    if (!sheet || name === 'Dashboard') return;
     const columns = HPQ_SCHEMA[name].length;
     sheet.getRange(1, 1, 1, columns).setBackground('#102a4c').setFontColor('#ffffff').setFontWeight('bold');
     if (name !== 'Selfies') sheet.autoResizeColumns(1, Math.min(columns, 16));

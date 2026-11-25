@@ -1,6 +1,6 @@
 {
   "project": "HP Party Quest",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "date": "2026-11-25",
   "sourceValidated": true,
   "mobileFlowValidated": true,
@@ -31,5 +31,7 @@
   "emailRecoveryRequiresVerification": false,
   "emailRecoveryMode": "EMAIL_ONLY_BY_ORGANIZER_REQUEST",
   "duplicateRegistrationBlocked": true,
-  "emailRecoveryGooglePermissionRequired": false
+  "emailRecoveryGooglePermissionRequired": false,
+  "dashboardLocalValidated": true,
+  "dashboardLiveValidated": false
 }

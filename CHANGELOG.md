@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.2.4 — 2026-11-25
+
+- Dashboard ahora calcula participantes activos, votos válidos, votantes, participación y ranking desde los datos reales.
+- Se actualiza al votar, registrarse y al inicializar el servicio; incluye los votos existentes.
+- Los empates comparten posición. Un fallo del panel no convierte un voto guardado en un error.
+- El inicializador respeta Dashboard como hoja de presentación y conserva su ancho y título combinado.
+
 ## 2.2.3 — 2026-11-25
 
 - Por pedido del organizador, el regreso al pase usa solo el email registrado, sin códigos ni correos de confirmación. Conocer ese email permite abrir su pase.

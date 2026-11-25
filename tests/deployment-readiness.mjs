@@ -6,7 +6,7 @@ const workflow = fs.readFileSync('.github/workflows/release-live.yml', 'utf8');
 const renderer = fs.readFileSync('scripts/render-config.mjs', 'utf8');
 
 const assertions = [
-  [code.includes("VERSION: '2.2.3'"), 'backend version is 2.2.3'],
+  [code.includes("VERSION: '2.2.4'"), 'backend version is 2.2.4'],
   [code.includes("ensureRuntimeReady_(String((e && e.parameter && e.parameter.frontend) || ''))"), 'health bootstraps runtime'],
   [code.includes("ensureRuntimeReady_('');"), 'POST bootstraps runtime'],
   [setup.includes('function ensureRuntimeReady_('), 'runtime bootstrap exists'],

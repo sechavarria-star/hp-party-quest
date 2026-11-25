@@ -1,6 +1,6 @@
 const HPQ = Object.freeze({
   SPREADSHEET_ID: PropertiesService.getScriptProperties().getProperty('HPQ_SPREADSHEET_ID') || '',
-  VERSION: '2.2.3',
+  VERSION: '2.2.4',
   MAX_PAYLOAD_CHARS: 190000
 });
 
@@ -119,6 +119,7 @@ function registerParticipant_(payload) {
       audit_('REGISTRATION_CREATED', participantId, '', '', 'ACCEPTED', { source: participant.RegistrationSource }, '', 'INFO');
     }
 
+    refreshDashboardSafely_();
     const session = createSession_(participant.ParticipantID, payload.registrationSource || 'GITHUB_PAGES');
     return {
       duplicateRegistration: false,
@@ -209,6 +210,7 @@ function castVote_(payload) {
     touchParticipant_(auth.participant.ParticipantID, now);
     return { candidateDisplayName: String(candidate.data.DisplayName), challengeId: challenge.ChallengeID, votedAt: now.toISOString() };
   } finally {
+    if (auth && challenge) refreshDashboardSafely_();
     lock.releaseLock();
   }
 }

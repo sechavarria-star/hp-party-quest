@@ -96,3 +96,7 @@ El paquete queda listo para el flujo completo de registro → QR → escaneo →
 ## Recuperar un pase existente
 
 La opción «Abrir mi pase» usa solo el email registrado, sin códigos ni correos, y conserva el mismo QR, selfie y votos. Ver [regreso al pase](docs/RECOVERY.md).
+
+## Resultados en la planilla
+
+Dashboard se actualiza automáticamente con cada voto y registro, y al inicializar el servicio. Muestra la consigna activa, total de votos válidos y ranking. Votes conserva el detalle original. El organizador puede ejecutar refreshDashboard desde Apps Script para recalcular tras editar datos manualmente. Los empates comparten posición; este panel no confirma ganadores.
