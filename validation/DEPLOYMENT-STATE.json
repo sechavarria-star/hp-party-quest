@@ -1,7 +1,7 @@
 {
   "project": "HP Party Quest",
-  "version": "2.2.1",
-  "date": "2026-11-24",
+  "version": "2.2.2",
+  "date": "2026-11-25",
   "sourceValidated": true,
   "mobileFlowValidated": true,
   "mobileFlowEnvironment": "two isolated emulated mobile browsers, local backend functions",
@@ -23,5 +23,7 @@
   "manualFileEditingRequired": false,
   "powerShellRequired": false,
   "passImageExportLocallyValidated": true,
-  "nativePhotoLibraryPhysicalValidation": false
+  "nativePhotoLibraryPhysicalValidation": false,
+  "emailRecoveryLocalValidation": true,
+  "emailRecoveryLiveValidation": false
 }

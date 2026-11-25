@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.2.2 — 2026-11-25
+
+- Recuperación por email con código de seis dígitos, vigencia de 10 minutos y un solo uso.
+- Conserva participante, QR, selfie y votos. Solo se crea una sesión nueva al validar el código.
+- Cinco intentos por código, reenvío cada 60 segundos, tres envíos por email por hora y límite global.
+- Respuesta genérica al solicitar el código para no revelar si un email está registrado.
+- Permiso de Google limitado a enviar correo, además del acceso existente a Sheets.
+
 ## Corrección de acceso — 2026-11-25
 
 - Una sesión rechazada ofrece descartar explícitamente el acceso local anterior y volver al registro.

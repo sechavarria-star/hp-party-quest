@@ -4,6 +4,7 @@
   const config = window.HPQ_CONFIG || {};
   const storageKey = 'hpq.sessionToken.v1';
   const state = { sessionToken: localStorage.getItem(storageKey) || '', participant: null, candidate: null };
+  const recoveryState = { email: '', id: '' };
   const passExport = { file: null, url: '', generation: 0 };
   const candidateToken = new URLSearchParams(location.search).get('candidate') || '';
   const views = [...document.querySelectorAll('.view')];
@@ -223,6 +224,50 @@
     $('fatal-message').textContent = message;
     show('view-error');
   }
+
+  function openRecovery() {
+    $('recovery-email').value = '';
+    $('recovery-code').value = '';
+    $('recovery-code-form').hidden = true;
+    $('recovery-status').hidden = true;
+    $('recover-error').hidden = true;
+    recoveryState.email = ''; recoveryState.id = '';
+    show('view-recover');
+  }
+  $('open-recovery-register').addEventListener('click', openRecovery);
+  $('open-recovery-error').addEventListener('click', openRecovery);
+  $('recovery-back').addEventListener('click', boot);
+  $('recovery-email-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = $('request-recovery');
+    $('recover-error').hidden = true;
+    setBusy(button, true, 'Solicitando código…');
+    try {
+      const email = $('recovery-email').value.trim();
+      const data = await api('requestRecovery', { email: email });
+      recoveryState.email = email; recoveryState.id = data.recoveryId;
+      $('recovery-status').textContent = data.message;
+      $('recovery-status').hidden = false;
+      $('recovery-code-form').hidden = false;
+      $('recovery-code').value = '';
+      $('recovery-code').focus();
+    } catch (error) { $('recover-error').textContent = safeMessage(error); $('recover-error').hidden = false; }
+    finally { setBusy(button, false); }
+  });
+  $('recovery-code-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = $('recover-access');
+    $('recover-error').hidden = true;
+    setBusy(button, true, 'Recuperando tu pase…');
+    try {
+      const data = await api('recover', { email: recoveryState.email, recoveryId: recoveryState.id, code: $('recovery-code').value.trim() });
+      saveSession(data.sessionToken);
+      recoveryState.email = ''; recoveryState.id = ''; $('recovery-code').value = '';
+      state.participant = data.participant;
+      if (candidateToken && data.participant.hasSelfie) await loadCandidate(); else renderPass(data.participant);
+    } catch (error) { $('recover-error').textContent = safeMessage(error); $('recover-error').hidden = false; }
+    finally { setBusy(button, false); }
+  });
 
   $('register-form').addEventListener('submit', async (event) => {
     event.preventDefault();

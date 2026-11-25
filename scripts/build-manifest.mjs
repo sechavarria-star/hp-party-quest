@@ -20,7 +20,7 @@ if (process.argv.includes('--staged')) {
   }
 } else visit();
 fs.writeFileSync('RELEASE-MANIFEST.json', JSON.stringify({
-  name: 'HP Kick Off 27 Quest', version: '2.2.1', builtAt: new Date().toISOString(),
+  name: 'HP Kick Off 27 Quest', version: '2.2.2', builtAt: new Date().toISOString(),
   releaseMode: 'Local Apps Script authentication + GitHub Pages Actions', files
 }, null, 2) + '\n');
 fs.writeFileSync('SHA256SUMS.txt', Object.entries(files).map(([name, hash]) => hash + '  ' + name).join('\n') + '\n');

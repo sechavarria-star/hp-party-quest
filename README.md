@@ -92,3 +92,7 @@ La especificación completa está en [`docs/DEPLOY.md`](docs/DEPLOY.md). Las pru
 ## Alcance
 
 El paquete queda listo para el flujo completo de registro → QR → escaneo → voto. Ranking público, consola de host y cierre de ganadores quedan como siguientes módulos; el esquema actual ya contiene `Dashboard`, `Winners` y las reglas necesarias para agregarlos sin cambiar la identidad del participante.
+
+## Recuperar un pase existente
+
+La opción «Recuperar mi pase por email» verifica un código temporal enviado al email registrado y conserva el mismo QR, selfie y votos. Ver [recuperación y autorización de correo](docs/RECOVERY.md).
