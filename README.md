@@ -17,7 +17,7 @@ GitHub repository
 - Registro con nombre, apellido, email y consentimiento.
 - Selfie obligatoria con consentimiento separado; puede agregarse o cambiarse desde el pase.
 - Confirmación personalizada con nombre del votante y foto del candidato, visible solo para sesiones activas.
-- Rechazo del email duplicado: nunca entrega una sesión nueva por conocer el email o el QR público. La identidad se conserva en el navegador original; recuperar acceso requiere intervención de la organización.
+- El alta evita duplicar participantes. Por pedido del organizador, «Abrir mi pase» permite volver al registro existente con solo conocer su email; no comprueba acceso a la casilla.
 - Sesión persistente en `localStorage`; en Sheets solo se guarda SHA-256.
 - QR generado localmente en el navegador, sin CDN ni servicio de terceros.
 - Link personal `?candidate=<QRToken>` sin nombre ni email.
@@ -95,4 +95,4 @@ El paquete queda listo para el flujo completo de registro → QR → escaneo →
 
 ## Recuperar un pase existente
 
-La opción «Recuperar mi pase por email» verifica un código temporal enviado al email registrado y conserva el mismo QR, selfie y votos. Ver [recuperación y autorización de correo](docs/RECOVERY.md).
+La opción «Abrir mi pase» usa solo el email registrado, sin códigos ni correos, y conserva el mismo QR, selfie y votos. Ver [regreso al pase](docs/RECOVERY.md).

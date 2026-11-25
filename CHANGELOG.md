@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.3 — 2026-11-25
+
+- Por pedido del organizador, el regreso al pase usa solo el email registrado, sin códigos ni correos de confirmación. Conocer ese email permite abrir su pase.
+- Conserva el participante, QR, selfie y votos. No duplica registros ni cambia las reglas de votación.
+- Se retira el envío de correo del código y de los permisos solicitados.
+
 ## 2.2.2 — 2026-11-25
 
 - Recuperación por email con código de seis dígitos, vigencia de 10 minutos y un solo uso.

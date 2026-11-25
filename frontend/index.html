@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#081b33">
   <meta name="description" content="Registro y desafíos de HP Kick Off '27 Quest">
   <title>HP Kick Off '27 Quest</title>
-  <link rel="stylesheet" href="assets/styles.css?v=selfie-2.2.2-recover">
+  <link rel="stylesheet" href="assets/styles.css?v=selfie-2.2.3-recover">
 </head>
 <body>
   <div class="ambient ambient-one"></div>
@@ -37,20 +37,14 @@
       </article>
 
       <article id="view-recover" class="panel view" hidden>
-        <p class="kicker">RECUPERAR ACCESO</p>
+        <p class="kicker">YA ESTOY REGISTRADO</p>
         <h2>Volvé a tu pase</h2>
-        <p class="muted">Ingresá el email con el que te registraste. Te enviaremos un código para recuperar el mismo QR y tus votos.</p>
-        <form id="recovery-email-form" class="form-grid">
-          <label>Email del registro<input id="recovery-email" type="email" autocomplete="email" maxlength="254" required></label>
-          <button id="request-recovery" class="button button-primary" type="submit">Enviar código a mi email</button>
+        <p class="muted">Ingresá el email con el que te registraste y listo.</p>
+        <form id="recovery-email-form">
+          <label>Email del registro<input id="recovery-email" type="email" autocomplete="email" maxlength="160" required></label>
+          <p id="recover-error" class="form-error" role="alert" hidden></p>
+          <button id="recover-access" class="button button-primary" type="submit">Abrir mi pase</button>
         </form>
-        <p id="recovery-status" class="muted" role="status" hidden></p>
-        <form id="recovery-code-form" class="form-grid" hidden>
-          <label>Código recibido por email<input id="recovery-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" required></label>
-          <p class="tiny">Tiene 6 dígitos, vence en 10 minutos y se usa una sola vez. Si pediste varios, usá el último código.</p>
-          <button id="recover-access" class="button button-primary" type="submit">Recuperar mi pase</button>
-        </form>
-        <p id="recover-error" class="form-error" role="alert" hidden></p>
         <button id="recovery-back" class="button button-secondary" type="button">Volver al juego</button>
       </article>
       <article id="view-register" class="panel view" hidden>
@@ -79,7 +73,7 @@
           <p id="register-error" class="form-error" role="alert" hidden></p>
           <button class="button button-primary" type="submit"><span>Generar mi QR</span><span aria-hidden="true">→</span></button>
         </form>
-      <button id="open-recovery-register" class="button button-secondary" type="button">Ya me registré · Recuperar mi pase</button>
+      <button id="open-recovery-register" class="button button-secondary" type="button">Ya me registré · Abrir mi pase</button>
       </article>
 
       <article id="view-pass" class="panel view" hidden>
@@ -153,7 +147,7 @@
         </div>
         <p id="fatal-message" class="muted"></p>
         <button id="retry-button" class="button button-primary" type="button">Reintentar</button>
-        <button id="open-recovery-error" class="button button-secondary" type="button">Recuperar mi pase por email</button>
+        <button id="open-recovery-error" class="button button-secondary" type="button">Volver a mi pase</button>
         <div id="session-reset-options" hidden>
           <p class="muted">Si usaste un registro de prueba que ya fue eliminado, podés descartar ese acceso de este navegador y volver a registrarte. Si tu registro sigue vigente, consultá a la organización para recuperar el acceso: volver a registrarte no recupera tu QR anterior.</p>
           <button id="restart-registration" class="button button-secondary" type="button">Descartar acceso anterior y volver al registro</button>
@@ -163,8 +157,8 @@
   </main>
 
   <footer><span>HP Kick Off '27 Quest</span><span>Built for people to connect</span></footer>
-  <script src="config.js?v=selfie-2.2.2-recover"></script>
+  <script src="config.js?v=selfie-2.2.3-recover"></script>
   <script src="assets/vendor/hpq-qr.js?v=2.1.1"></script>
-  <script src="assets/app.js?v=selfie-2.2.2-recover" defer></script>
+  <script src="assets/app.js?v=selfie-2.2.3-recover" defer></script>
 </body>
 </html>

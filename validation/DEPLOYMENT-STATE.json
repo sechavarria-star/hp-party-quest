@@ -1,6 +1,6 @@
 {
   "project": "HP Party Quest",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "date": "2026-11-25",
   "sourceValidated": true,
   "mobileFlowValidated": true,
@@ -12,11 +12,11 @@
   "selfieFlowLiveValidated": true,
   "liveApiCrossVotesValidated": true,
   "qaChallengeRestored": true,
-  "duplicateEmailTakeoverBlocked": true,
+  "duplicateEmailTakeoverBlocked": false,
   "appsScriptProject": "1nPqqQ9x9dJdRvk1xKw4OIxbf3kuu9pxu9FDf18AyWD0sFs3MzBzCRiVg",
   "appsScriptDeployment": "AKfycbxlx7Mmweb0eOXFDDk7WOhqUYvayyCR-WA3W5Gd14ydQXeIT3UvCH1Ffw_XhKlPOQmfPA",
   "automatedReleasePrepared": true,
-  "liveDeploymentVerified": true,
+  "liveDeploymentVerified": false,
   "blockingConditions": [
     "Physical two-phone registration, optical QR scan and voting validation pending."
   ],
@@ -27,5 +27,9 @@
   "emailRecoveryLocalValidation": true,
   "emailRecoveryLiveValidation": false,
   "emailRecoveryDeliveryAccepted": true,
-  "emailRecoveryGooglePermissionGranted": true
+  "emailRecoveryGooglePermissionGranted": true,
+  "emailRecoveryRequiresVerification": false,
+  "emailRecoveryMode": "EMAIL_ONLY_BY_ORGANIZER_REQUEST",
+  "duplicateRegistrationBlocked": true,
+  "emailRecoveryGooglePermissionRequired": false
 }

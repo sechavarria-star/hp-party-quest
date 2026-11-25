@@ -8,8 +8,6 @@ const require = createRequire(import.meta.url);
 const { chromium } = require('C:/Users/SEE/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const selfieFile = path.resolve('tests/fixtures/selfie-qa.jpg');
 const backend = createBackend();
-const recoveryMails = [];
-backend.context.MailApp = { getRemainingDailyQuota: () => 100, sendEmail: mail => recoveryMails.push(mail) };
 const api = 'https://script.google.com/macros/s/qa-isolated/exec';
 const server = http.createServer((req, res) => {
   const name = new URL(req.url, 'http://localhost').pathname;
@@ -172,17 +170,10 @@ try {
   assert.equal(new URL(pages[1].url()).searchParams.get('candidate'), rows[0].QRToken, 'scanned candidate survives restart');
   assert.equal(backend.tables.get('Participants').length, 2, 'restart does not alter participants');
   assert.equal(backend.tables.get('Votes').length, 1, 'restart does not alter votes');
-  await intruder.goto(base + '?candidate=' + rows[1].QRToken);
-  await intruder.locator('#view-candidate').waitFor({ state: 'visible' });
-  await intruder.locator('#vote-button').click();
-  await intruder.locator('#open-recovery-register').click();
+  await intruder.goto(base + '?volver=1&candidate=' + rows[1].QRToken);
+  await intruder.locator('#view-recover').waitFor({ state: 'visible' });
+  assert.equal(new URL(intruder.url()).searchParams.has('volver'), false, 'entry parameter removed so normal session restore keeps working');
   await intruder.locator('#recovery-email').fill('qa.ana@hp.com');
-  await intruder.locator('#request-recovery').click();
-  await intruder.locator('#recovery-code-form').waitFor({ state: 'visible' });
-  assert.equal(recoveryMails.length, 1);
-  assert.equal(backend.tables.get('Sessions').length, 2, 'requesting mail does not grant access');
-  const recoveryCode = recoveryMails[0].body.match(/es: (\d{6})/)[1];
-  await intruder.locator('#recovery-code').fill(recoveryCode);
   await intruder.locator('#recover-access').click();
   await intruder.locator('#view-candidate').waitFor({ state: 'visible' });
   assert.match(await intruder.locator('#identity-note').textContent(), /Ana/);
@@ -193,11 +184,12 @@ try {
   assert.equal(backend.tables.get('Participants').length, 2);
   assert.equal(backend.tables.get('Votes').length, 1);
   assert.equal(backend.tables.get('Sessions').length, 3);
+  assert.equal(await intruder.locator('#recovery-code').count(), 0, 'no code step');
   await intruder.reload();
   await intruder.locator('#view-candidate').waitFor({ state: 'visible' });
-  assert.match(await intruder.locator('#identity-note').textContent(), /Ana/, 'recovered credential persists');
+  assert.match(await intruder.locator('#identity-note').textContent(), /Ana/, 'email-only session persists');
   await intruder.screenshot({ path: 'test-output/mobile-email-recovery.png', fullPage: true });
-  console.log('PASS: email-code recovery keeps original participant, QR and votes; explicit recovery from a stale test credential; two isolated mobile browsers, registration, QR rendering, candidate, vote, self-vote, duplicate vote, duplicate-email takeover and identity preservation on network failure. Physical phones and optical QR scan still require real-device validation.');
+  console.log('PASS: email-only return keeps original participant, QR and votes; explicit recovery from a stale test credential; two isolated mobile browsers, registration, QR rendering, candidate, vote, self-vote, duplicate vote, duplicate registration and identity preservation on network failure. Physical phones and optical QR scan still require real-device validation.');
 } finally {
   await browser.close();
   server.close();
