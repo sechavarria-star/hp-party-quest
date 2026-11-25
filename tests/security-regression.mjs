@@ -29,7 +29,7 @@ export function createBackend() {
       releaseLock() { locked = false; }
     }) }
   });
-  for (const file of ['Code.gs', 'Security.gs', 'Data.gs', 'Setup.gs', 'Selfies.gs', 'Recovery.gs', 'Dashboard.gs', 'Announcements.gs'])
+  for (const file of ['Code.gs', 'Security.gs', 'Data.gs', 'Setup.gs', 'Selfies.gs', 'Recovery.gs', 'Dashboard.gs', 'Announcements.gs', 'Thanks.gs'])
     vm.runInContext(fs.readFileSync('backend/' + file, 'utf8'), context, { filename: file });
   const schema = vm.runInContext('HPQ_SCHEMA', context);
   for (const key of Object.keys(schema)) tables.set(key, []);

@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#081b33">
   <meta name="description" content="Registro y desafíos de HP Kick Off '27 Quest">
   <title>HP Kick Off '27 Quest</title>
-  <link rel="stylesheet" href="assets/styles.css?v=selfie-2.2.6-captura">
+  <link rel="stylesheet" href="assets/styles.css?v=selfie-2.3.0-captura">
 </head>
 <body>
   <div class="ambient ambient-one"></div>
@@ -36,6 +36,23 @@
         <p>Un segundo…</p>
       </article>
 
+      <article id="view-thanks" class="panel view" hidden>
+        <p class="kicker">DESPUÉS DEL EVENTO</p>
+        <h2>Gracias por participar</h2>
+        <p class="muted">Descargá una imagen por participante, con su selfie y nombre completo, sin votos. Todas juntas en un archivo ZIP para armar el video.</p>
+        <p id="thanks-count" class="muted" role="status">Cargando participantes…</p>
+        <div class="thanks-content">
+          <div>
+            <button id="thanks-download-all" class="button button-primary" type="button" disabled>Descargar todas juntas</button>
+            <button id="thanks-refresh" class="button button-secondary" type="button">Actualizar lista</button>
+            <progress id="thanks-progress" max="1" value="0" hidden style="width:100%;margin-top:18px;"></progress>
+            <p id="thanks-status" class="muted" role="status"></p>
+            <p id="thanks-error" class="form-error" role="alert" hidden></p>
+            <a id="thanks-save-zip" class="button button-primary" hidden>Volver a descargar ZIP</a>
+          </div>
+          <div id="thanks-preview" aria-label="Vista previa de una tarjeta"></div>
+        </div>
+      </article>
       <article id="view-selfie" class="panel view" hidden>
         <p class="kicker">HP KICK OFF &#39;27</p>
         <h2 id="winner-message" hidden></h2>
@@ -169,8 +186,9 @@
   </main>
 
   <footer><span>HP Kick Off '27 Quest</span><span>Built for people to connect</span></footer>
-  <script src="config.js?v=selfie-2.2.6-captura"></script>
+  <script src="config.js?v=selfie-2.3.0-captura"></script>
   <script src="assets/vendor/hpq-qr.js?v=2.1.1"></script>
-  <script src="assets/app.js?v=selfie-2.2.6-captura" defer></script>
+  <script src="assets/thanks-cards.js?v=2.3.0" defer></script>
+  <script src="assets/app.js?v=selfie-2.3.0-captura" defer></script>
 </body>
 </html>

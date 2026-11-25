@@ -102,3 +102,7 @@ La opción «Abrir mi pase» usa solo el email registrado, sin códigos ni corre
 Dashboard se actualiza automáticamente con cada voto y registro, y al inicializar el servicio. Muestra la consigna activa, total de votos válidos y ranking. Votes conserva el detalle original. El organizador puede ejecutar refreshDashboard desde Apps Script para recalcular tras editar datos manualmente. Los empates comparten posición; este panel no confirma ganadores.
 
 Dashboard incluye «Ver anuncio» en cada fila del ranking. Winners dispone de SelfieURL para las filas de ganadores cargadas. El enlace de anuncio permite compartir foto, nombre completo y votos sin iniciar sesión. Usa un token propio para ese participante y consigna; el organizador elige qué enlace compartir. No confirma ganadores ni cierra la votación automáticamente.
+
+## Tarjetas para después del evento
+
+En la planilla privada, abrí Dashboard y el enlace «Descargar todas» de la fila «Gracias por participar». La pantalla permite actualizar la lista y descargar un ZIP con un PNG vertical de 1080 × 1350 por participante activo: título, selfie y nombre completo, sin votos. El enlace es exclusivo de organización y permite acceder a las fotos; conservá su privacidad. Una lista vacía no genera archivos. La exportación no restaura ni modifica registros o votos.

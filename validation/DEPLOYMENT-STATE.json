@@ -1,6 +1,6 @@
 {
   "project": "HP Party Quest",
-  "version": "2.2.6",
+  "version": "2.3.0",
   "date": "2026-11-25",
   "sourceValidated": true,
   "mobileFlowValidated": true,
@@ -34,7 +34,6 @@
   "emailRecoveryGooglePermissionRequired": false,
   "dashboardLocalValidated": true,
   "dashboardLiveValidated": true,
-  "dashboardObservedValidVotes": 3,
   "selfieResultLinksLocallyValidated": true,
   "selfieResultLinksLiveValidated": false,
   "publicWinnerAnnouncementLocallyValidated": true,
@@ -48,5 +47,8 @@
       1280
     ],
     "decorationsBehindText": true
-  }
+  },
+  "thanksExportLocallyValidated": true,
+  "thanksExportLiveValidated": false,
+  "productionRosterEmptyObserved": true
 }

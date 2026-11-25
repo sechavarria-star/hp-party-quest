@@ -79,6 +79,11 @@ function refreshDashboard_() {
     sheet.getRange(5, 8, links.length, 1).setRichTextValues(links);
   }
   refreshWinnerSelfieLinks_(participantById, config);
+  const exportUrl = thanksExportUrl_(config);
+  sheet.getRange('A17').setValue('Gracias por participar');
+  const exportLink = SpreadsheetApp.newRichTextValue().setText('Descargar todas');
+  if (exportUrl) exportLink.setLinkUrl(exportUrl);
+  sheet.getRange('B17').setRichTextValue(exportLink.build());
   properties.setProperty('HPQ_DASHBOARD_RANKING_ROWS', String(snapshot.ranking.length));
   properties.setProperty('HPQ_DASHBOARD_DIRTY', '0');
   return { challengeId: id, validVotes: snapshot.validVotes, rankedParticipants: snapshot.ranking.length };

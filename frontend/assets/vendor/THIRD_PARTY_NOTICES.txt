@@ -4,3 +4,6 @@ https://www.d-project.com/
 Licensed under the MIT License.
 
 The QR Code word mark is a registered trademark of DENSO WAVE INCORPORATED.
+
+JSZip 3.10.1 — https://github.com/Stuk/jszip/tree/v3.10.1
+Used under the MIT license. See JSZIP-LICENSE.markdown. Loaded locally for ZIP downloads.

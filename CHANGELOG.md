@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.3.0 — 2026-11-25
+
+- Dashboard incorpora «Descargar todas» para generar un ZIP de tarjetas «Gracias por participar», con selfie y nombre completo, sin votos.
+- Una imagen PNG vertical de 1080 × 1350 por participante activo. Vista previa, progreso y actualización de la lista antes de descargar.
+- El enlace de organización se conserva privado en la planilla; no publica emails, sesiones ni fotos en el repositorio.
+- La lista vacía se respeta y no se restauran registros eliminados.
+
 ## 2.2.6 — 2026-11-25
 
 - El anuncio público queda sin botones para compartirlo mediante captura de pantalla.

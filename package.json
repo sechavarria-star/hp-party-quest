@@ -1,9 +1,9 @@
 {
   "name": "hp-party-quest",
-  "version": "2.2.6",
+  "version": "2.3.0",
   "private": true,
   "scripts": {
-    "check": "node --check frontend/config.js && node --check frontend/assets/app.js && node tests/setup-table-compat.mjs && node tests/deployment-readiness.mjs && node tests/security-regression.mjs && node tests/selfies.mjs && node tests/recovery.mjs && node tests/dashboard.mjs && node tests/announcements.mjs",
+    "check": "node --check frontend/config.js && node --check frontend/assets/app.js && node tests/setup-table-compat.mjs && node tests/deployment-readiness.mjs && node tests/security-regression.mjs && node tests/selfies.mjs && node tests/recovery.mjs && node tests/dashboard.mjs && node tests/announcements.mjs && node --check frontend/assets/thanks-cards.js && node tests/thanks.mjs",
     "serve": "python3 -m http.server 8080 -d frontend"
   }
 }

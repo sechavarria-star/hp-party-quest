@@ -216,7 +216,45 @@ try {
   assert.equal(await intruder.locator('#recovery-email').isVisible(), false, 'shared announcement bypasses expired session and never asks for access');
   assert.equal(backend.tables.get('Votes').length, 1);
   await intruder.screenshot({ path: 'test-output/mobile-winner-announcement.png', fullPage: true });
-  console.log('PASS: public winner announcement, fullname, photo and votes; selfie links, authenticated viewer and JPEG download; email-only return keeps original participant, QR and votes; explicit recovery from a stale test credential; two isolated mobile browsers, registration, QR rendering, candidate, vote, self-vote, duplicate vote, duplicate registration and identity preservation on network failure. Physical phones and optical QR scan still require real-device validation.');
+  const thanksUrl = backend.context.thanksExportUrl_(backend.context.getConfig_());
+  await intruder.addInitScript(() => {
+    window.thanksDrawTexts = [];
+    const draw = CanvasRenderingContext2D.prototype.fillText;
+    CanvasRenderingContext2D.prototype.fillText = function (text, ...args) {
+      if (this.canvas.width === 1080 && this.canvas.height === 1350) window.thanksDrawTexts.push(String(text));
+      return draw.call(this, text, ...args);
+    };
+  });
+  await intruder.goto(base + new URL(thanksUrl).search);
+  await intruder.locator('#thanks-download-all:not([disabled])').waitFor();
+  assert.match(await intruder.locator('#thanks-count').textContent(), /2 participantes/);
+  const thanksDownloadPromise = intruder.waitForEvent('download');
+  await intruder.locator('#thanks-download-all').click();
+  const thanksDownload = await thanksDownloadPromise;
+  assert.equal(thanksDownload.suggestedFilename(), 'HP-Kick-Off-27-Gracias-por-participar.zip');
+  await thanksDownload.saveAs('test-output/thanks-cards.zip');
+  const JSZip = require(path.resolve('frontend/assets/vendor/jszip-3.10.1.min.js'));
+  const archive = await JSZip.loadAsync(fs.readFileSync('test-output/thanks-cards.zip'), { checkCRC32: true });
+  const exported = Object.values(archive.files).filter(file => !file.dir);
+  assert.equal(exported.length, 2);
+  for (const file of exported) {
+    assert.match(file.name, /\.png$/);
+    const bytes = await file.async('uint8array');
+    const metadata = await sharp(bytes).metadata();
+    assert.equal(metadata.width, 1080); assert.equal(metadata.height, 1350);
+    fs.writeFileSync('test-output/' + file.name, bytes);
+  }
+  const drawnText = await intruder.evaluate(() => window.thanksDrawTexts);
+  assert(drawnText.includes('Gracias por participar'));
+  assert(drawnText.includes('Ana QA')); assert(drawnText.includes('Beto QA'));
+  assert(!drawnText.some(text => /voto/i.test(text)), 'thank-you images never show votes');
+  assert.equal(backend.tables.get('Votes').length, 1);
+  await intruder.screenshot({ path: 'test-output/thanks-export-page.png', fullPage: true });
+  backend.tables.get('Participants').length = 0;
+  await intruder.locator('#thanks-refresh').click();
+  await intruder.waitForFunction(() => document.getElementById('thanks-count').textContent.includes('Todavía no hay participantes'));
+  assert.equal(await intruder.locator('#thanks-download-all').isDisabled(), true, 'cleaned database cannot generate an empty archive');
+  console.log('PASS: thank-you PNG ZIP download, full names without votes and empty roster; public winner announcement, fullname, photo and votes; selfie links, authenticated viewer and JPEG download; email-only return keeps original participant, QR and votes; explicit recovery from a stale test credential; two isolated mobile browsers, registration, QR rendering, candidate, vote, self-vote, duplicate vote, duplicate registration and identity preservation on network failure. Physical phones and optical QR scan still require real-device validation.');
 } finally {
   await browser.close();
   server.close();

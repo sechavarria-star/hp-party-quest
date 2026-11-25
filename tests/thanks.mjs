@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { createBackend } from './security-regression.mjs';
+const { context, tables, call } = createBackend();
+const config = context.getConfig_();
+const url = context.thanksExportUrl_(config);
+const token = new URL(url).searchParams.get('agradecimientos');
+assert.equal(context.thanksExportUrl_(config), url);
+assert.equal(call('thanksManifest', { token }).total, 0, 'empty cleaned database stays empty');
+for (const invalid of ['', 'A'.repeat(90)]) assert.throws(() => call('thanksManifest', { token: invalid }), e => e.code === 'EXPORT_NOT_AVAILABLE');
+const photo = 'data:image/jpeg;base64,' + fs.readFileSync(new URL('./fixtures/selfie-qa.jpg', import.meta.url)).toString('base64');
+const register = (firstName, email) => call('register', { firstName, lastName: 'QA', email, termsAccepted: true, selfieDataUrl: photo, selfieConsent: true });
+const ana = register('Ana', 'qa.thanks.ana@hp.com');
+const beto = register('Beto', 'qa.thanks.beto@hp.com');
+const inactive = register('Fuera', 'qa.thanks.inactive@hp.com');
+tables.get('Participants')[2].Status = 'INACTIVE';
+assert.throws(() => call('thanksManifest', { token: ana.sessionToken }), e => e.code === 'EXPORT_NOT_AVAILABLE');
+assert.throws(() => call('thanksManifest', { token: ana.participant.qrToken }), e => e.code === 'EXPORT_NOT_AVAILABLE');
+const publicLink = context.announcementShareUrl_(tables.get('Participants')[0], config);
+assert.throws(() => call('thanksManifest', { token: new URL(publicLink).searchParams.get('ganador') }), e => e.code === 'EXPORT_NOT_AVAILABLE');
+const before = JSON.stringify({ participants: tables.get('Participants'), votes: tables.get('Votes'), selfies: tables.get('Selfies'), sessions: tables.get('Sessions') });
+const manifest = call('thanksManifest', { token });
+assert.equal(manifest.total, 2);
+assert.deepEqual(Array.from(manifest.participants, p => p.fullName), ['Ana QA', 'Beto QA']);
+assert(!JSON.stringify(manifest).includes('@hp.com')); assert(!JSON.stringify(manifest).includes('votes'));
+const batch = call('thanksImages', { token, participantIds: [ana.participant.participantId, beto.participant.participantId] });
+assert.equal(batch.participants.length, 2); assert.equal(batch.participants[0].selfieDataUrl, photo);
+assert(!JSON.stringify(batch).includes('@hp.com')); assert(!JSON.stringify(batch).includes(ana.sessionToken));
+assert.equal(call('thanksImages', { token, participantIds: [ana.participant.participantId, ana.participant.participantId] }).participants.length, 1);
+for (const participantIds of [[], new Array(6).fill('ID'), ['UNKNOWN'], [inactive.participant.participantId], [null]]) {
+  assert.throws(() => call('thanksImages', { token, participantIds }));
+}
+assert.equal(JSON.stringify({ participants: tables.get('Participants'), votes: tables.get('Votes'), selfies: tables.get('Selfies'), sessions: tables.get('Sessions') }), before, 'export never modifies registrations, photos, votes or sessions');
+tables.get('Selfies').splice(1, 1);
+const missing = call('thanksImages', { token, participantIds: [beto.participant.participantId] }).participants[0];
+assert.equal(missing.hasSelfie, false); assert.equal(missing.selfieDataUrl, ''); assert.equal(missing.fullName, 'Beto QA');
+console.log('Thank-you export: private organizer link, empty database, bounded batches, active roster, real photos, missing-photo handling, no emails/votes/session disclosure and unchanged source data: OK');

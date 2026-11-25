@@ -127,3 +127,10 @@ footer { max-width: 1180px; margin: 0 auto; padding: 0 28px 28px; display: flex;
 .panel h2, .candidate-card h3, .party-pass h3 { overflow-wrap: anywhere; }
 
 .panel .kicker { color: #0076a8; }
+
+.thanks-mode .hero { display: none; }
+.thanks-mode .shell { display: block; max-width: 980px; }
+.thanks-content { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+#thanks-preview { max-width: 400px; margin: 0 auto; }
+#view-thanks .button { margin-top: 12px; text-decoration: none; }
+@media (max-width: 640px) { .thanks-content { grid-template-columns: 1fr; } }

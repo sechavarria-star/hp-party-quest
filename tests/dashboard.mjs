@@ -44,6 +44,7 @@ const dashboard = { setColumnWidth() {}, getRange(...args) {
     breakApart() { return range; }, clearContent() { clears.push(key); output.delete(key); return range; },
     merge() { return range; }, setValue(value) { output.set(key, value); return range; },
     setValues(values) { output.set(key, JSON.parse(JSON.stringify(values))); return range; },
+    setRichTextValue(value) { output.set(key, JSON.parse(JSON.stringify(value))); return range; },
     setRichTextValues(values) { output.set(key, JSON.parse(JSON.stringify(values))); return range; },
     setBackground() { return range; }, setFontColor() { return range; }, setFontWeight() { return range; },
     setWrap() { return range; }, setFontSize() { return range; }, setNumberFormat() { return range; }

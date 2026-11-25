@@ -5,6 +5,10 @@
   const storageKey = 'hpq.sessionToken.v1';
   const state = { sessionToken: localStorage.getItem(storageKey) || '', participant: null, candidate: null };
   const passExport = { file: null, url: '', generation: 0 };
+  const thanksToken = new URLSearchParams(location.search).get('agradecimientos') || '';
+  let thanksManifest = [];
+  let thanksZipUrl = '';
+  let thanksBusy = false;
   const announcementToken = new URLSearchParams(location.search).get('ganador') || '';
   let announcementData = null;
   const selfieToken = new URLSearchParams(location.search).get('selfie') || '';
@@ -19,6 +23,7 @@
   function show(id) {
     views.forEach((node) => { node.hidden = node.id !== id; });
     document.body.classList.toggle('selfie-mode', id === 'view-selfie');
+    document.body.classList.toggle('thanks-mode', id === 'view-thanks');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -173,6 +178,64 @@
     }
   }
 
+  async function loadThanks() {
+    show('view-thanks');
+    if (thanksZipUrl) URL.revokeObjectURL(thanksZipUrl);
+    thanksZipUrl = '';
+    thanksManifest = [];
+    $('thanks-save-zip').hidden = true;
+    $('thanks-save-zip').removeAttribute('href');
+    $('thanks-status').textContent = '';
+    $('thanks-progress').hidden = true;
+    $('thanks-error').hidden = true;
+    $('thanks-download-all').disabled = true;
+    $('thanks-count').textContent = 'Cargando participantes…';
+    $('thanks-preview').replaceChildren();
+    try {
+      const data = await api('thanksManifest', { token: thanksToken });
+      thanksManifest = data.participants;
+      $('thanks-count').textContent = data.total ? data.total + ' participantes · Una imagen vertical por persona.' : 'Todavía no hay participantes registrados. Podés volver después del evento para descargar las imágenes.';
+      if (data.total) {
+        const batch = await api('thanksImages', { token: thanksToken, participantIds: [thanksManifest[0].participantId] });
+        const preview = await window.HPQ_THANKS.renderCard(batch.participants[0]);
+        preview.style.width = '100%'; preview.style.height = 'auto';
+        preview.setAttribute('aria-label', 'Gracias por participar · ' + batch.participants[0].fullName);
+        $('thanks-preview').replaceChildren(preview);
+      }
+      $('thanks-download-all').disabled = !data.total;
+    } catch (error) { $('thanks-count').textContent = ''; $('thanks-error').textContent = safeMessage(error); $('thanks-error').hidden = false; }
+  }
+  $('thanks-refresh').addEventListener('click', () => { if (!thanksBusy) loadThanks(); });
+  $('thanks-download-all').addEventListener('click', async () => {
+    if (thanksBusy || !thanksManifest.length) return;
+    thanksBusy = true;
+    $('thanks-error').hidden = true;
+    $('thanks-save-zip').hidden = true;
+    $('thanks-refresh').disabled = true;
+    const button = $('thanks-download-all');
+    setBusy(button, true, 'Preparando imágenes…');
+    $('thanks-progress').max = thanksManifest.length;
+    $('thanks-progress').value = 0; $('thanks-progress').hidden = false;
+    try {
+      const result = await window.HPQ_THANKS.archive(thanksManifest, async participantIds => {
+        const data = await api('thanksImages', { token: thanksToken, participantIds });
+        return data.participants;
+      }, (completed, total) => {
+        $('thanks-progress').value = completed;
+        $('thanks-status').textContent = 'Preparando imagen ' + completed + ' de ' + total + '…';
+      });
+      if (thanksZipUrl) URL.revokeObjectURL(thanksZipUrl);
+      thanksZipUrl = URL.createObjectURL(result.blob);
+      const link = $('thanks-save-zip');
+      link.href = thanksZipUrl;
+      link.download = 'HP-Kick-Off-27-Gracias-por-participar.zip';
+      link.hidden = false;
+      $('thanks-status').textContent = 'Listo: ' + result.completed + ' imágenes.' + (result.missingPhotos ? ' Hay ' + result.missingPhotos + ' sin selfie, con un marcador en su lugar.' : '');
+      link.click();
+    } catch (error) { $('thanks-error').textContent = safeMessage(error); $('thanks-error').hidden = false; }
+    finally { thanksBusy = false; $('thanks-refresh').disabled = false; setBusy(button, false); }
+  });
+
   async function loadAnnouncement() {
     try {
       const data = await api('announcement', { token: announcementToken });
@@ -259,6 +322,7 @@
       fatal('Configuración pendiente', 'Completá API_URL en frontend/config.js después de publicar el backend de Apps Script.');
       return;
     }
+    if (thanksToken) return loadThanks();
     if (announcementToken) return loadAnnouncement();
     const entryUrl = new URL(location.href);
     if (entryUrl.searchParams.get('volver') === '1') {
@@ -271,7 +335,7 @@
       await restoreSession();
     } catch (error) {
       fatal('No pudimos recuperar tu acceso', safeMessage(error));
-      $('session-reset-options').hidden = error.code !== 'INVALID_SESSION';
+      $('session-reset-options').hidden = !['INVALID_SESSION', 'INVALID_PARTICIPANT'].includes(error.code);
       return;
     }
     if (state.participant && !state.participant.hasSelfie) return renderPass(state.participant);
