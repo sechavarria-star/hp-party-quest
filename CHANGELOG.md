@@ -2,6 +2,8 @@
 
 ## 2.2.6 — 2026-11-25
 
+- El anuncio público queda sin botones para compartirlo mediante captura de pantalla.
+
 - Enlaces «Ver anuncio» para compartir la foto del ganador, nombre completo y votos obtenidos, sin pedir acceso.
 - Tratamiento «ganadora»/«ganador» para nombres reconocidos y felicitación neutra en casos ambiguos.
 - Cada enlace de anuncio tiene un token propio y no expone emails, sesiones ni el QR de votación; no confirma ganadores ni altera votos.

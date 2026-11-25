@@ -190,8 +190,10 @@
       $('selfie-download').href = data.selfieDataUrl;
       $('selfie-download').download = 'Foto-Kick-Off-27.jpg';
       $('selfie-download').textContent = 'Descargar foto';
+      $('selfie-download').hidden = true;
+      $('winner-share-status').hidden = true;
       $('selfie-my-pass').hidden = true;
-      $('share-winner').hidden = false;
+      $('share-winner').hidden = true;
       show('view-selfie');
       document.title = data.fullName + " · HP Kick Off '27";
     } catch (error) { fatal('Anuncio no disponible', safeMessage(error)); }
