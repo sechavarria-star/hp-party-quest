@@ -87,3 +87,21 @@ function verifyEmailRecovery_(payload) {
     return { sessionToken: session.rawToken, participant: publicParticipant_(hit.data) };
   } finally { lock.releaseLock(); }
 }
+
+// Private editor diagnostics: never returns codes, tokens, or participant details.
+function inspectRecoveryDelivery() {
+  const properties = PropertiesService.getScriptProperties().getProperties();
+  const tickets = Object.keys(properties).filter(function (key) { return key.indexOf('HPQ_EMAIL_RECOVERY_') === 0; }).map(function (key) {
+    try { return JSON.parse(properties[key]); } catch (_) { return {}; }
+  });
+  const events = objects_('AuditLog').filter(function (row) { return /^RECOVERY_/.test(String(row.data.EventType)); });
+  console.log(JSON.stringify({
+    tickets: tickets.length,
+    acceptedByGoogle: tickets.filter(function (t) { return t.delivered; }).length,
+    consumed: tickets.filter(function (t) { return t.used; }).length,
+    mostRecentRequest: tickets.length ? new Date(Math.max.apply(null, tickets.map(function (t) { return Number(t.sentAt || 0); }))).toISOString() : null,
+    recentEvents: events.slice(-5).map(function (row) { return { event: row.data.EventType, at: row.data.Timestamp, result: row.data.Result }; }),
+    activeParticipants: objects_('Participants').filter(function (row) { return String(row.data.Status).toUpperCase() === 'ACTIVE'; }).length,
+    remainingQuota: MailApp.getRemainingDailyQuota()
+  }));
+}

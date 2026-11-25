@@ -9,3 +9,5 @@ El envío usa MailApp desde la cuenta que despliega el backend. La autorización
 No hay una ruta pública para emitir accesos de administrador. Ni el email solo, ni el QR público permiten recuperar una sesión. El código y su contenido no se registran en auditoría ni se devuelven al navegador. Los errores de entrega se auditan sin contenido ni direcciones. La llegada a correo corporativo y la recuperación final en iPhone/Android requieren validación real; filtros de correo y cuotas pueden afectar la entrega.
 
 Validación local: tests/recovery.mjs cubre código incorrecto, vinculación, repetición, vencimiento, límites, entrega fallida e identidad conservada. tests/mobile-flow.mjs cubre solicitud y verificación desde otro navegador, regreso a la persona escaneada y persistencia de la nueva sesión. Los tests usan un correo simulado; no envían mensajes.
+
+El helper privado inspectRecoveryDelivery se ejecuta solo desde el editor y muestra totales, eventos de envío y cuota, sin códigos, emails ni tokens. Un envío aceptado por Google no confirma entrega en la bandeja del destinatario.

@@ -16,7 +16,7 @@
   "appsScriptProject": "1nPqqQ9x9dJdRvk1xKw4OIxbf3kuu9pxu9FDf18AyWD0sFs3MzBzCRiVg",
   "appsScriptDeployment": "AKfycbxlx7Mmweb0eOXFDDk7WOhqUYvayyCR-WA3W5Gd14ydQXeIT3UvCH1Ffw_XhKlPOQmfPA",
   "automatedReleasePrepared": true,
-  "liveDeploymentVerified": false,
+  "liveDeploymentVerified": true,
   "blockingConditions": [
     "Physical two-phone registration, optical QR scan and voting validation pending."
   ],
@@ -25,5 +25,7 @@
   "passImageExportLocallyValidated": true,
   "nativePhotoLibraryPhysicalValidation": false,
   "emailRecoveryLocalValidation": true,
-  "emailRecoveryLiveValidation": false
+  "emailRecoveryLiveValidation": false,
+  "emailRecoveryDeliveryAccepted": true,
+  "emailRecoveryGooglePermissionGranted": true
 }
