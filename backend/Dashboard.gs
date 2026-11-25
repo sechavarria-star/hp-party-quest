@@ -43,13 +43,13 @@ function refreshDashboard_() {
   );
   const sheet = sheet_('Dashboard');
   const properties = PropertiesService.getScriptProperties();
-  if (properties.getProperty('HPQ_DASHBOARD_LAYOUT') !== '1') {
+  if (properties.getProperty('HPQ_DASHBOARD_LAYOUT') !== '2') {
     // The imported template merged its explanatory note across the ranking.
     // Keep the note on the left so future rankings can grow down the right.
     sheet.getRange('A13:H15').breakApart().clearContent();
     sheet.getRange('A13:B15').merge().setValue('Se actualiza con cada voto. Solo se cuentan votos válidos de la consigna activa. Los empates comparten posición.').setWrap(true).setFontSize(10);
-    [180,130,20,45,130,170,70,16].forEach(function (width, i) { sheet.setColumnWidth(i + 1, width); });
-    properties.setProperty('HPQ_DASHBOARD_LAYOUT', '1');
+    [180,145,16,40,120,155,60,10].forEach(function (width, i) { sheet.setColumnWidth(i + 1, width); });
+    properties.setProperty('HPQ_DASHBOARD_LAYOUT', '2');
   }
   sheet.getRange('A1').setValue("HP Kick Off '27 · Resultados");
   sheet.getRange('A4:B4').setValues([['Consigna activa', safeSheetValue_(id)]]).setWrap(true);
@@ -63,7 +63,7 @@ function refreshDashboard_() {
   sheet.getRange('B10').setNumberFormat('0');
   sheet.getRange('D4:G4').setValues([['Pos.', 'Participante ID', 'Nombre', 'Votos']]);
   const previousRows = Number(properties.getProperty('HPQ_DASHBOARD_RANKING_ROWS') || 0);
-  const outputRows = Math.max(1, previousRows, snapshot.ranking.length);
+  const outputRows = Math.max(10, previousRows, snapshot.ranking.length);
   sheet.getRange(5, 4, outputRows, 4).clearContent();
   if (snapshot.ranking.length) sheet.getRange(5, 4, snapshot.ranking.length, 4).setValues(snapshot.ranking.map(function (row) { return row.map(safeSheetValue_); }));
   properties.setProperty('HPQ_DASHBOARD_RANKING_ROWS', String(snapshot.ranking.length));

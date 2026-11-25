@@ -51,7 +51,7 @@ assert.equal(properties.get('HPQ_DASHBOARD_DIRTY'), '0');
 tables.get('Votes')[0].Valid = false;
 context.refreshDashboard_();
 assert.equal(output.get('A6:B10')[1][1], 1);
-assert(clears.includes('5:4:2:4'), 'clear stale ranking rows after an invalidation');
+assert(clears.includes('5:4:10:4'), 'clear stale ranking rows after an invalidation');
 tables.get('Votes')[0].Valid = true;
 assert.equal(JSON.stringify({ participants: tables.get('Participants'), votes: tables.get('Votes') }), sourceBefore, 'refresh preserves original records');
 console.log('Dashboard: automatic refresh, challenge/validity filters, counts, ties, stale rows, preserved records and saved-vote safety on display failure: OK');
