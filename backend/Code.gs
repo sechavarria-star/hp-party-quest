@@ -1,6 +1,6 @@
 const HPQ = Object.freeze({
   SPREADSHEET_ID: PropertiesService.getScriptProperties().getProperty('HPQ_SPREADSHEET_ID') || '',
-  VERSION: '2.2.5',
+  VERSION: '2.2.6',
   MAX_PAYLOAD_CHARS: 190000
 });
 
@@ -52,6 +52,7 @@ function parseRequest_(e) {
 function routeAction_(action, payload) {
   const routes = {
     register: registerParticipant_,
+    announcement: getWinnerAnnouncement_,
     session: getSessionParticipant_,
     requestRecovery: recoverByEmail_,
     recover: recoverByEmail_,

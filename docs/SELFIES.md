@@ -24,6 +24,10 @@ El botón «Guardar mi QR como foto» prepara un PNG del pase con el QR original
 
 Validado en navegadores móviles emulados: archivo PNG, dimensiones, QR decodificado, cancelación y alternativa de descarga. La ubicación final en Fotos/Galería requiere comprobación en dispositivos físicos.
 
-## Fotos desde resultados
+## Anuncios desde resultados
 
-Los enlaces de Dashboard y Winners abren el visor con el QR público del participante como referencia, sin incluir email, sesión ni imagen en el enlace. La foto se solicita mediante el API existente con una sesión del juego. Si el navegador todavía no tiene acceso, se conserva el destino al abrir el pase por email. No se suben fotos a Drive ni se cambian permisos. El visor permite descargar el JPG y nunca emite votos.
+Dashboard y Winners generan enlaces de anuncio para la persona y la consigna correspondientes. Al compartirlos se muestra la selfie, el nombre completo y los votos, con una felicitación. El organizador elige a quién anunciar; el sistema no cierra la votación ni confirma ganadores. Si Winners tiene un total final confirmado para esa persona/consigna, se usa ese total; en caso contrario se cuentan los votos válidos actuales.
+
+Los anuncios se pueden abrir sin sesión, por pedido expreso del organizador para compartir los resultados. El token de anuncio es distinto del QR público, no incluye email ni sesión y queda limitado a esa vista de solo lectura. No permite votar ni abrir el pase. Las fotos siguen almacenadas en la planilla privada; no se suben a Drive ni se cambia el acceso de la planilla.
+
+La frase usa ganadora o ganador con nombres reconocidos, como Julieta o Sebastián. Para nombres ambiguos se utiliza «¡Felicitaciones!», sin asignar un tratamiento incierto. Esto es formato del mensaje y no verificación de identidad.

@@ -206,7 +206,17 @@ try {
   assert.match(await intruder.locator('#selfie-name').textContent(), /Beto/, 'return keeps target selfie');
   assert.equal(backend.tables.get('Votes').length, 1, 'viewing and downloading never cast a vote');
   await intruder.screenshot({ path: 'test-output/mobile-selfie-viewer.png', fullPage: true });
-  console.log('PASS: selfie links, authenticated viewer and JPEG download; email-only return keeps original participant, QR and votes; explicit recovery from a stale test credential; two isolated mobile browsers, registration, QR rendering, candidate, vote, self-vote, duplicate vote, duplicate registration and identity preservation on network failure. Physical phones and optical QR scan still require real-device validation.');
+  const shareUrl = backend.context.announcementShareUrl_(rows[1], backend.context.getConfig_());
+  await intruder.evaluate(() => localStorage.setItem('hpq.sessionToken.v1', 'old-invalid-session'));
+  await intruder.goto(base + new URL(shareUrl).search);
+  await intruder.locator('#view-selfie').waitFor({ state: 'visible' });
+  assert.equal(await intruder.locator('#selfie-name').textContent(), 'Beto QA');
+  assert.equal(await intruder.locator('#winner-message').textContent(), '¡Felicitaciones!');
+  assert.equal(await intruder.locator('#winner-votes').textContent(), '1 voto obtenido');
+  assert.equal(await intruder.locator('#recovery-email').isVisible(), false, 'shared announcement bypasses expired session and never asks for access');
+  assert.equal(backend.tables.get('Votes').length, 1);
+  await intruder.screenshot({ path: 'test-output/mobile-winner-announcement.png', fullPage: true });
+  console.log('PASS: public winner announcement, fullname, photo and votes; selfie links, authenticated viewer and JPEG download; email-only return keeps original participant, QR and votes; explicit recovery from a stale test credential; two isolated mobile browsers, registration, QR rendering, candidate, vote, self-vote, duplicate vote, duplicate registration and identity preservation on network failure. Physical phones and optical QR scan still require real-device validation.');
 } finally {
   await browser.close();
   server.close();

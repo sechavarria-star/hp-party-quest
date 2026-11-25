@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#081b33">
   <meta name="description" content="Registro y desafíos de HP Kick Off '27 Quest">
   <title>HP Kick Off '27 Quest</title>
-  <link rel="stylesheet" href="assets/styles.css?v=selfie-2.2.5-recover">
+  <link rel="stylesheet" href="assets/styles.css?v=selfie-2.2.6-recover">
 </head>
 <body>
   <div class="ambient ambient-one"></div>
@@ -37,9 +37,14 @@
       </article>
 
       <article id="view-selfie" class="panel view" hidden>
-        <p class="kicker">SELFIE DEL EVENTO</p>
-        <h2 id="selfie-name"></h2>
+        <p class="kicker">HP KICK OFF &#39;27</p>
+        <h2 id="winner-message" hidden></h2>
         <img id="selfie-image" alt="" width="480" height="480" style="display:block;width:100%;max-width:480px;height:auto;margin:18px auto;border-radius:8px;">
+        <h2 id="selfie-name"></h2>
+        <p id="winner-votes" class="winner-votes" hidden></p>
+        <p id="winner-challenge" class="muted" hidden></p>
+        <button id="share-winner" class="button button-primary" type="button" hidden>Compartir anuncio</button>
+        <p id="winner-share-status" class="tiny" role="status"></p>
         <a id="selfie-download" class="button button-primary" download="Selfie.jpg">Descargar selfie</a>
         <button id="selfie-my-pass" class="button button-secondary" type="button">Volver a mi pase</button>
       </article>
@@ -164,8 +169,8 @@
   </main>
 
   <footer><span>HP Kick Off '27 Quest</span><span>Built for people to connect</span></footer>
-  <script src="config.js?v=selfie-2.2.5-recover"></script>
+  <script src="config.js?v=selfie-2.2.6-recover"></script>
   <script src="assets/vendor/hpq-qr.js?v=2.1.1"></script>
-  <script src="assets/app.js?v=selfie-2.2.5-recover" defer></script>
+  <script src="assets/app.js?v=selfie-2.2.6-recover" defer></script>
 </body>
 </html>

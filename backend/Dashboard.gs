@@ -64,7 +64,7 @@ function refreshDashboard_() {
   sheet.getRange('B6:B8').setNumberFormat('0');
   sheet.getRange('B9').setNumberFormat('0%');
   sheet.getRange('B10').setNumberFormat('0');
-  sheet.getRange('D4:H4').setValues([['Pos.', 'Participante ID', 'Nombre', 'Votos', 'Selfie']]).setBackground('#102a4c').setFontColor('#ffffff').setFontWeight('bold');
+  sheet.getRange('D4:H4').setValues([['Pos.', 'Participante ID', 'Nombre', 'Votos', 'Anuncio']]).setBackground('#102a4c').setFontColor('#ffffff').setFontWeight('bold');
   const previousRows = Number(properties.getProperty('HPQ_DASHBOARD_RANKING_ROWS') || 0);
   const outputRows = Math.max(10, previousRows, snapshot.ranking.length);
   sheet.getRange(5, 4, outputRows, 5).clearContent();
@@ -72,7 +72,7 @@ function refreshDashboard_() {
   if (snapshot.ranking.length) {
     const links = snapshot.ranking.map(function (row) {
       const url = participantSelfieUrl_(participantById[String(row[1])], config);
-      const rich = SpreadsheetApp.newRichTextValue().setText(url ? 'Ver selfie' : 'Sin selfie');
+      const rich = SpreadsheetApp.newRichTextValue().setText(url ? 'Ver anuncio' : 'Sin selfie');
       if (url) rich.setLinkUrl(url);
       return [rich.build()];
     });
@@ -95,17 +95,15 @@ function refreshDashboardSafely_() {
 }
 
 function participantSelfieUrl_(participant, config) {
-  if (!participant || !participant.SelfieUpdatedAt || !participant.QRToken) return '';
-  const base = stripQuery_(String(config.FRONTEND_BASE_URL || ''));
-  if (!validHttpsUrl_(base)) return '';
-  return base + '?selfie=' + encodeURIComponent(String(participant.QRToken));
+  return announcementShareUrl_(participant, config);
 }
 
 function refreshWinnerSelfieLinks_(participantById, config) {
   objects_('Winners').forEach(function (winner) {
     const participantId = String(winner.data.ParticipantID || '');
     if (!participantId) return;
-    const url = participantSelfieUrl_(participantById[participantId], config);
+    const winnerConfig = Object.assign({}, config, { ACTIVE_CHALLENGE_ID: String(winner.data.ChallengeID || config.ACTIVE_CHALLENGE_ID || '') });
+    const url = participantSelfieUrl_(participantById[participantId], winnerConfig);
     if (String(winner.data.SelfieURL || '') !== url) updateCell_('Winners', winner.rowNumber, 'SelfieURL', url);
   });
 }

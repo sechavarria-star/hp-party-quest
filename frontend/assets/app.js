@@ -5,6 +5,8 @@
   const storageKey = 'hpq.sessionToken.v1';
   const state = { sessionToken: localStorage.getItem(storageKey) || '', participant: null, candidate: null };
   const passExport = { file: null, url: '', generation: 0 };
+  const announcementToken = new URLSearchParams(location.search).get('ganador') || '';
+  let announcementData = null;
   const selfieToken = new URLSearchParams(location.search).get('selfie') || '';
   const candidateToken = new URLSearchParams(location.search).get('candidate') || '';
   const views = [...document.querySelectorAll('.view')];
@@ -171,6 +173,40 @@
     }
   }
 
+  async function loadAnnouncement() {
+    try {
+      const data = await api('announcement', { token: announcementToken });
+      if (!/^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(data.selfieDataUrl || '')) throw new Error('La foto no está disponible.');
+      announcementData = data;
+      $('winner-message').textContent = data.greeting;
+      $('winner-message').hidden = false;
+      $('selfie-name').textContent = data.fullName;
+      $('winner-votes').textContent = data.votes + (data.votes === 1 ? ' voto obtenido' : ' votos obtenidos');
+      $('winner-votes').hidden = false;
+      $('winner-challenge').textContent = data.challengeName;
+      $('winner-challenge').hidden = false;
+      $('selfie-image').src = data.selfieDataUrl;
+      $('selfie-image').alt = 'Foto de ' + data.fullName;
+      $('selfie-download').href = data.selfieDataUrl;
+      $('selfie-download').download = 'Foto-Kick-Off-27.jpg';
+      $('selfie-download').textContent = 'Descargar foto';
+      $('selfie-my-pass').hidden = true;
+      $('share-winner').hidden = false;
+      show('view-selfie');
+      document.title = data.fullName + " · HP Kick Off '27";
+    } catch (error) { fatal('Anuncio no disponible', safeMessage(error)); }
+  }
+  $('share-winner').addEventListener('click', async () => {
+    if (!announcementData) return;
+    const share = { title: announcementData.greeting, text: announcementData.fullName + ' · ' + announcementData.votes + ' votos · ' + announcementData.eventName, url: location.href };
+    try {
+      if (navigator.share) await navigator.share(share);
+      else { await navigator.clipboard.writeText(location.href); $('winner-share-status').textContent = 'Enlace copiado para compartir.'; }
+    } catch (error) {
+      if (error.name !== 'AbortError') $('winner-share-status').textContent = 'Podés copiar el enlace de la barra del navegador para compartirlo.';
+    }
+  });
+
   async function loadSelfie() {
     if (!state.participant) { openRecovery(); return; }
     try {
@@ -221,6 +257,7 @@
       fatal('Configuración pendiente', 'Completá API_URL en frontend/config.js después de publicar el backend de Apps Script.');
       return;
     }
+    if (announcementToken) return loadAnnouncement();
     const entryUrl = new URL(location.href);
     if (entryUrl.searchParams.get('volver') === '1') {
       entryUrl.searchParams.delete('volver');
