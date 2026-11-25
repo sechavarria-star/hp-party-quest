@@ -208,6 +208,7 @@
       await restoreSession();
     } catch (error) {
       fatal('No pudimos recuperar tu acceso', safeMessage(error));
+      $('session-reset-options').hidden = error.code !== 'INVALID_SESSION';
       return;
     }
     if (state.participant && !state.participant.hasSelfie) return renderPass(state.participant);
@@ -217,6 +218,7 @@
   }
 
   function fatal(title, message) {
+    $('session-reset-options').hidden = true;
     $('fatal-title').textContent = title;
     $('fatal-message').textContent = message;
     show('view-error');
@@ -307,6 +309,14 @@
   $('voted-pass').addEventListener('click', () => renderPass(state.participant));
   $('refresh-pass').addEventListener('click', boot);
   $('retry-button').addEventListener('click', boot);
+  $('restart-registration').addEventListener('click', () => {
+    // Discard only after the server rejected this credential and the user chose to.
+    if ($('session-reset-options').hidden) return;
+    clearSession();
+    $('session-reset-options').hidden = true;
+    $('register-error').hidden = true;
+    show('view-register');
+  });
 
   function buildPassCanvas(participant) {
     const source = $('qr-code').querySelector('canvas');

@@ -158,7 +158,19 @@ try {
   await pages[0].goto(base);
   await pages[0].locator('#view-error').waitFor({ state: 'visible' });
   assert(await pages[0].evaluate(() => Boolean(localStorage.getItem('hpq.sessionToken.v1'))), 'temporary network error preserves identity');
-  console.log('PASS: two isolated mobile browsers, registration, QR rendering, candidate, vote, self-vote, duplicate vote, duplicate-email takeover and identity preservation on network failure. Physical phones and optical QR scan still require real-device validation.');
+  assert.equal(await pages[0].locator('#session-reset-options').isVisible(), false, 'network errors never offer credential removal');
+  await contexts[1].route(api, async route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: false, code: 'INVALID_SESSION', message: 'No encontramos tu sesión.' }) }));
+  const previousToken = await pages[1].evaluate(() => localStorage.getItem('hpq.sessionToken.v1'));
+  await pages[1].goto(base + '?candidate=' + rows[0].QRToken);
+  await pages[1].locator('#session-reset-options').waitFor({ state: 'visible' });
+  assert.equal(await pages[1].evaluate(() => localStorage.getItem('hpq.sessionToken.v1')), previousToken, 'invalid token preserved until explicit choice');
+  await pages[1].locator('#restart-registration').click();
+  await pages[1].locator('#view-register').waitFor({ state: 'visible' });
+  assert.equal(await pages[1].evaluate(() => localStorage.getItem('hpq.sessionToken.v1')), null);
+  assert.equal(new URL(pages[1].url()).searchParams.get('candidate'), rows[0].QRToken, 'scanned candidate survives restart');
+  assert.equal(backend.tables.get('Participants').length, 2, 'restart does not alter participants');
+  assert.equal(backend.tables.get('Votes').length, 1, 'restart does not alter votes');
+  console.log('PASS: explicit recovery from a stale test credential; two isolated mobile browsers, registration, QR rendering, candidate, vote, self-vote, duplicate vote, duplicate-email takeover and identity preservation on network failure. Physical phones and optical QR scan still require real-device validation.');
 } finally {
   await browser.close();
   server.close();

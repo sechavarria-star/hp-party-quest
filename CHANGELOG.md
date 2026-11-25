@@ -1,5 +1,10 @@
 # Changelog
 
+## Corrección de acceso — 2026-11-25
+
+- Una sesión rechazada ofrece descartar explícitamente el acceso local anterior y volver al registro.
+- Los errores de conexión conservan el acceso y no muestran esa opción. No se alteran participantes, QR ni votos del servidor; se mantiene la protección contra emails duplicados.
+
 ## 2.2.1 — 2026-11-24
 
 - Pase personal PNG de 1080 × 1350 con opción de compartir como archivo de imagen y alternativa de descarga.

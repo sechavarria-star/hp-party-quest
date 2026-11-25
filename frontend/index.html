@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#081b33">
   <meta name="description" content="Registro y desafíos de HP Kick Off '27 Quest">
   <title>HP Kick Off '27 Quest</title>
-  <link rel="stylesheet" href="assets/styles.css?v=selfie-2.2.1-pass">
+  <link rel="stylesheet" href="assets/styles.css?v=selfie-2.2.1-access">
 </head>
 <body>
   <div class="ambient ambient-one"></div>
@@ -134,13 +134,17 @@
         </div>
         <p id="fatal-message" class="muted"></p>
         <button id="retry-button" class="button button-primary" type="button">Reintentar</button>
+        <div id="session-reset-options" hidden>
+          <p class="muted">Si usaste un registro de prueba que ya fue eliminado, podés descartar ese acceso de este navegador y volver a registrarte. Si tu registro sigue vigente, consultá a la organización para recuperar el acceso: volver a registrarte no recupera tu QR anterior.</p>
+          <button id="restart-registration" class="button button-secondary" type="button">Descartar acceso anterior y volver al registro</button>
+        </div>
       </article>
     </section>
   </main>
 
   <footer><span>HP Kick Off '27 Quest</span><span>Built for people to connect</span></footer>
-  <script src="config.js?v=selfie-2.2.1-pass"></script>
+  <script src="config.js?v=selfie-2.2.1-access"></script>
   <script src="assets/vendor/hpq-qr.js?v=2.1.1"></script>
-  <script src="assets/app.js?v=selfie-2.2.1-pass" defer></script>
+  <script src="assets/app.js?v=selfie-2.2.1-access" defer></script>
 </body>
 </html>
