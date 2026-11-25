@@ -1,6 +1,6 @@
 {
   "project": "HP Party Quest",
-  "version": "2.2.4",
+  "version": "2.2.5",
   "date": "2026-11-25",
   "sourceValidated": true,
   "mobileFlowValidated": true,
@@ -16,7 +16,7 @@
   "appsScriptProject": "1nPqqQ9x9dJdRvk1xKw4OIxbf3kuu9pxu9FDf18AyWD0sFs3MzBzCRiVg",
   "appsScriptDeployment": "AKfycbxlx7Mmweb0eOXFDDk7WOhqUYvayyCR-WA3W5Gd14ydQXeIT3UvCH1Ffw_XhKlPOQmfPA",
   "automatedReleasePrepared": true,
-  "liveDeploymentVerified": true,
+  "liveDeploymentVerified": false,
   "blockingConditions": [
     "Physical two-phone registration, optical QR scan and voting validation pending."
   ],
@@ -34,5 +34,7 @@
   "emailRecoveryGooglePermissionRequired": false,
   "dashboardLocalValidated": true,
   "dashboardLiveValidated": true,
-  "dashboardObservedValidVotes": 3
+  "dashboardObservedValidVotes": 3,
+  "selfieResultLinksLocallyValidated": true,
+  "selfieResultLinksLiveValidated": false
 }

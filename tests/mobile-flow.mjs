@@ -189,7 +189,24 @@ try {
   await intruder.locator('#view-candidate').waitFor({ state: 'visible' });
   assert.match(await intruder.locator('#identity-note').textContent(), /Ana/, 'email-only session persists');
   await intruder.screenshot({ path: 'test-output/mobile-email-recovery.png', fullPage: true });
-  console.log('PASS: email-only return keeps original participant, QR and votes; explicit recovery from a stale test credential; two isolated mobile browsers, registration, QR rendering, candidate, vote, self-vote, duplicate vote, duplicate registration and identity preservation on network failure. Physical phones and optical QR scan still require real-device validation.');
+  await intruder.goto(base + '?selfie=' + rows[1].QRToken);
+  await intruder.locator('#view-selfie').waitFor({ state: 'visible' });
+  assert.match(await intruder.locator('#selfie-name').textContent(), /Beto/);
+  assert.match(await intruder.locator('#selfie-image').getAttribute('src'), /^data:image\/jpeg;base64,/);
+  const selfieDownloadPromise = intruder.waitForEvent('download');
+  await intruder.locator('#selfie-download').click();
+  assert.equal((await selfieDownloadPromise).suggestedFilename(), 'Selfie-' + rows[1].ParticipantID + '.jpg');
+  await intruder.evaluate(() => localStorage.removeItem('hpq.sessionToken.v1'));
+  await intruder.reload();
+  await intruder.locator('#view-recover').waitFor({ state: 'visible' });
+  assert.equal(await intruder.locator('#selfie-image').getAttribute('src'), null, 'anonymous link never renders the photo');
+  await intruder.locator('#recovery-email').fill('qa.ana@hp.com');
+  await intruder.locator('#recover-access').click();
+  await intruder.locator('#view-selfie').waitFor({ state: 'visible' });
+  assert.match(await intruder.locator('#selfie-name').textContent(), /Beto/, 'return keeps target selfie');
+  assert.equal(backend.tables.get('Votes').length, 1, 'viewing and downloading never cast a vote');
+  await intruder.screenshot({ path: 'test-output/mobile-selfie-viewer.png', fullPage: true });
+  console.log('PASS: selfie links, authenticated viewer and JPEG download; email-only return keeps original participant, QR and votes; explicit recovery from a stale test credential; two isolated mobile browsers, registration, QR rendering, candidate, vote, self-vote, duplicate vote, duplicate registration and identity preservation on network failure. Physical phones and optical QR scan still require real-device validation.');
 } finally {
   await browser.close();
   server.close();

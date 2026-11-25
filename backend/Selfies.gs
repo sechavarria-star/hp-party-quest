@@ -95,6 +95,7 @@ function updateParticipantSelfie_(payload) {
     updateCell_('Participants', hit.rowNumber, 'SelfieConsentAt', now);
     updateCell_('Participants', hit.rowNumber, 'SelfieUpdatedAt', now);
     audit_('SELFIE_SAVED', auth.participant.ParticipantID, '', '', 'ACCEPTED', {}, auth.session.SessionID, 'INFO');
+    refreshDashboardSafely_();
     return { participant: publicParticipant_(findOne_('Participants', 'ParticipantID', current.participant.ParticipantID).data) };
   } finally { lock.releaseLock(); }
 }

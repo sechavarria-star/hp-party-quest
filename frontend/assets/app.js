@@ -5,6 +5,7 @@
   const storageKey = 'hpq.sessionToken.v1';
   const state = { sessionToken: localStorage.getItem(storageKey) || '', participant: null, candidate: null };
   const passExport = { file: null, url: '', generation: 0 };
+  const selfieToken = new URLSearchParams(location.search).get('selfie') || '';
   const candidateToken = new URLSearchParams(location.search).get('candidate') || '';
   const views = [...document.querySelectorAll('.view')];
   const $ = (id) => document.getElementById(id);
@@ -15,6 +16,7 @@
 
   function show(id) {
     views.forEach((node) => { node.hidden = node.id !== id; });
+    document.body.classList.toggle('selfie-mode', id === 'view-selfie');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -169,6 +171,21 @@
     }
   }
 
+  async function loadSelfie() {
+    if (!state.participant) { openRecovery(); return; }
+    try {
+      const data = await api('candidate', { qrToken: selfieToken, sessionToken: state.sessionToken });
+      if (!/^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(data.selfieDataUrl || '')) throw new Error('Esta persona todavía no tiene una selfie guardada.');
+      $('selfie-name').textContent = data.candidate.displayName;
+      $('selfie-image').src = data.selfieDataUrl;
+      $('selfie-image').alt = 'Selfie de ' + data.candidate.displayName;
+      $('selfie-download').href = data.selfieDataUrl;
+      $('selfie-download').download = 'Selfie-' + data.candidate.participantId + '.jpg';
+      show('view-selfie');
+    } catch (error) { fatal('Foto no disponible', safeMessage(error)); }
+  }
+  $('selfie-my-pass').addEventListener('click', () => renderPass(state.participant));
+
   async function loadCandidate() {
     try {
       const data = await api('candidate', { qrToken: candidateToken, sessionToken: state.sessionToken });
@@ -219,6 +236,7 @@
       return;
     }
     if (state.participant && !state.participant.hasSelfie) return renderPass(state.participant);
+    if (selfieToken) return loadSelfie();
     if (candidateToken) return loadCandidate();
     if (state.participant) return renderPass(state.participant);
     show('view-register');
@@ -248,7 +266,8 @@
       const data = await api('recover', { email: $('recovery-email').value.trim() });
       saveSession(data.sessionToken);
       state.participant = data.participant;
-      if (candidateToken && data.participant.hasSelfie) await loadCandidate(); else renderPass(data.participant);
+      if (selfieToken && data.participant.hasSelfie) await loadSelfie();
+      else if (candidateToken && data.participant.hasSelfie) await loadCandidate(); else renderPass(data.participant);
     } catch (error) { $('recover-error').textContent = safeMessage(error); $('recover-error').hidden = false; }
     finally { setBusy(button, false); }
   });
@@ -287,7 +306,8 @@
       const data = await api('register', payload);
       saveSession(data.sessionToken);
       state.participant = data.participant;
-      if (candidateToken) await loadCandidate(); else renderPass(data.participant);
+      if (selfieToken) await loadSelfie();
+      else if (candidateToken) await loadCandidate(); else renderPass(data.participant);
     } catch (error) {
       errorNode.textContent = safeMessage(error);
       errorNode.hidden = false;

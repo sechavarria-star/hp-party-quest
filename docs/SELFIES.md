@@ -23,3 +23,7 @@ La captura con cámara y el escaneo entre celulares reales se validan por separa
 El botón «Guardar mi QR como foto» prepara un PNG del pase con el QR original. Usa el menú nativo de compartir archivos cuando el navegador lo admite. La persona elige Guardar imagen/Fotos o una aplicación disponible; la web no puede escribir automáticamente en la galería. Si no está disponible o falla, muestra la imagen para mantener presionada y una descarga PNG explícita. En Android una descarga puede quedar en Descargas según el navegador. Cancelar el menú no inicia descargas.
 
 Validado en navegadores móviles emulados: archivo PNG, dimensiones, QR decodificado, cancelación y alternativa de descarga. La ubicación final en Fotos/Galería requiere comprobación en dispositivos físicos.
+
+## Fotos desde resultados
+
+Los enlaces de Dashboard y Winners abren el visor con el QR público del participante como referencia, sin incluir email, sesión ni imagen en el enlace. La foto se solicita mediante el API existente con una sesión del juego. Si el navegador todavía no tiene acceso, se conserva el destino al abrir el pase por email. No se suben fotos a Drive ni se cambian permisos. El visor permite descargar el JPG y nunca emite votos.

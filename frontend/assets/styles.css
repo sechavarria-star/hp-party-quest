@@ -111,3 +111,7 @@ footer { max-width: 1180px; margin: 0 auto; padding: 0 28px 28px; display: flex;
   footer { padding: 0 18px 20px; }
   footer span:last-child { display: none; }
 }
+
+.selfie-mode .hero { display: none; }
+.selfie-mode .shell { display: block; max-width: 720px; }
+#selfie-download { text-decoration: none; }

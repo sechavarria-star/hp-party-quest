@@ -100,3 +100,5 @@ La opción «Abrir mi pase» usa solo el email registrado, sin códigos ni corre
 ## Resultados en la planilla
 
 Dashboard se actualiza automáticamente con cada voto y registro, y al inicializar el servicio. Muestra la consigna activa, total de votos válidos y ranking. Votes conserva el detalle original. El organizador puede ejecutar refreshDashboard desde Apps Script para recalcular tras editar datos manualmente. Los empates comparten posición; este panel no confirma ganadores.
+
+Dashboard incluye «Ver selfie» en cada fila del ranking. Winners dispone de SelfieURL para las filas de ganadores cargadas. El enlace abre una vista de la foto con descarga JPG; usa la sesión del juego y, si hace falta, el regreso simple por email. No declara ni confirma ganadores automáticamente.

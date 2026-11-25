@@ -1,6 +1,6 @@
 const HPQ = Object.freeze({
   SPREADSHEET_ID: PropertiesService.getScriptProperties().getProperty('HPQ_SPREADSHEET_ID') || '',
-  VERSION: '2.2.4',
+  VERSION: '2.2.5',
   MAX_PAYLOAD_CHARS: 190000
 });
 

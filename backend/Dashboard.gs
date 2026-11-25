@@ -36,20 +36,23 @@ function refreshDashboard_() {
   const config = getConfig_();
   const id = String(config.ACTIVE_CHALLENGE_ID || '');
   const challenge = findOne_('Challenges', 'ChallengeID', id);
+  const participants = objects_('Participants').map(function (r) { return r.data; });
+  const participantById = {};
+  participants.forEach(function (participant) { participantById[String(participant.ParticipantID)] = participant; });
   const snapshot = dashboardSnapshot_(
-    objects_('Participants').map(function (r) { return r.data; }),
+    participants,
     objects_('Votes').map(function (r) { return r.data; }),
     objects_('AuditLog').map(function (r) { return r.data; }), id
   );
   const sheet = sheet_('Dashboard');
   const properties = PropertiesService.getScriptProperties();
-  if (properties.getProperty('HPQ_DASHBOARD_LAYOUT') !== '2') {
+  if (properties.getProperty('HPQ_DASHBOARD_LAYOUT') !== '3') {
     // The imported template merged its explanatory note across the ranking.
     // Keep the note on the left so future rankings can grow down the right.
     sheet.getRange('A13:H15').breakApart().clearContent();
     sheet.getRange('A13:B15').merge().setValue('Se actualiza con cada voto. Solo se cuentan votos válidos de la consigna activa. Los empates comparten posición.').setWrap(true).setFontSize(10);
-    [180,145,16,40,120,155,60,10].forEach(function (width, i) { sheet.setColumnWidth(i + 1, width); });
-    properties.setProperty('HPQ_DASHBOARD_LAYOUT', '2');
+    [175,140,12,36,105,125,50,85].forEach(function (width, i) { sheet.setColumnWidth(i + 1, width); });
+    properties.setProperty('HPQ_DASHBOARD_LAYOUT', '3');
   }
   sheet.getRange('A1').setValue("HP Kick Off '27 · Resultados");
   sheet.getRange('A4:B4').setValues([['Consigna activa', safeSheetValue_(id)]]).setWrap(true);
@@ -61,11 +64,21 @@ function refreshDashboard_() {
   sheet.getRange('B6:B8').setNumberFormat('0');
   sheet.getRange('B9').setNumberFormat('0%');
   sheet.getRange('B10').setNumberFormat('0');
-  sheet.getRange('D4:G4').setValues([['Pos.', 'Participante ID', 'Nombre', 'Votos']]);
+  sheet.getRange('D4:H4').setValues([['Pos.', 'Participante ID', 'Nombre', 'Votos', 'Selfie']]).setBackground('#102a4c').setFontColor('#ffffff').setFontWeight('bold');
   const previousRows = Number(properties.getProperty('HPQ_DASHBOARD_RANKING_ROWS') || 0);
   const outputRows = Math.max(10, previousRows, snapshot.ranking.length);
-  sheet.getRange(5, 4, outputRows, 4).clearContent();
+  sheet.getRange(5, 4, outputRows, 5).clearContent();
   if (snapshot.ranking.length) sheet.getRange(5, 4, snapshot.ranking.length, 4).setValues(snapshot.ranking.map(function (row) { return row.map(safeSheetValue_); }));
+  if (snapshot.ranking.length) {
+    const links = snapshot.ranking.map(function (row) {
+      const url = participantSelfieUrl_(participantById[String(row[1])], config);
+      const rich = SpreadsheetApp.newRichTextValue().setText(url ? 'Ver selfie' : 'Sin selfie');
+      if (url) rich.setLinkUrl(url);
+      return [rich.build()];
+    });
+    sheet.getRange(5, 8, links.length, 1).setRichTextValues(links);
+  }
+  refreshWinnerSelfieLinks_(participantById, config);
   properties.setProperty('HPQ_DASHBOARD_RANKING_ROWS', String(snapshot.ranking.length));
   properties.setProperty('HPQ_DASHBOARD_DIRTY', '0');
   return { challengeId: id, validVotes: snapshot.validVotes, rankedParticipants: snapshot.ranking.length };
@@ -79,4 +92,20 @@ function refreshDashboardSafely_() {
     console.error('Dashboard refresh failed: ' + String(error && error.name || 'Error'));
     return false;
   }
+}
+
+function participantSelfieUrl_(participant, config) {
+  if (!participant || !participant.SelfieUpdatedAt || !participant.QRToken) return '';
+  const base = stripQuery_(String(config.FRONTEND_BASE_URL || ''));
+  if (!validHttpsUrl_(base)) return '';
+  return base + '?selfie=' + encodeURIComponent(String(participant.QRToken));
+}
+
+function refreshWinnerSelfieLinks_(participantById, config) {
+  objects_('Winners').forEach(function (winner) {
+    const participantId = String(winner.data.ParticipantID || '');
+    if (!participantId) return;
+    const url = participantSelfieUrl_(participantById[participantId], config);
+    if (String(winner.data.SelfieURL || '') !== url) updateCell_('Winners', winner.rowNumber, 'SelfieURL', url);
+  });
 }

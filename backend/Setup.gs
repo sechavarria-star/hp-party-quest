@@ -5,7 +5,7 @@ const HPQ_SCHEMA = Object.freeze({
   Votes: ['VoteID','ChallengeID','VoterParticipantID','CandidateParticipantID','VoteKey','VotedAt','Valid','ValidationResult','SessionID','UserAgent','Source','InvalidatedAt','InvalidatedBy','AdminNotes'],
   Sessions: ['SessionID','ParticipantID','SessionTokenHash','CreatedAt','ExpiresAt','LastUsedAt','Status','UserAgent','RegistrationSource','RevokedAt','RevokedReason'],
   AuditLog: ['LogID','Timestamp','EventType','ParticipantID','ChallengeID','TargetParticipantID','Result','Details','SessionID','Severity','AdminUser'],
-  Winners: ['ResultID','ChallengeID','Position','ParticipantID','FinalVotes','CalculatedAt','Confirmed','ConfirmedBy','AnnouncementStatus','Notes'],
+  Winners: ['ResultID','ChallengeID','Position','ParticipantID','FinalVotes','CalculatedAt','Confirmed','ConfirmedBy','AnnouncementStatus','Notes','SelfieURL'],
   Dashboard: ['Metric','Value','Notes'],
   Config: ['Key','Value','Description']
 });

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.5 — 2026-11-25
+
+- Columna «Selfie» con enlaces «Ver selfie» en el ranking de Dashboard.
+- Winners incorpora SelfieURL y actualiza los enlaces para los participantes cargados sin modificar posiciones, votos ni confirmaciones.
+- Visor de foto con nombre y descarga JPG, con el acceso existente del juego. El enlace muestra la última foto guardada.
+
 ## 2.2.4 — 2026-11-25
 
 - Dashboard ahora calcula participantes activos, votos válidos, votantes, participación y ranking desde los datos reales.

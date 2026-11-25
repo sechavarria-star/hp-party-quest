@@ -33,12 +33,19 @@ const other = context.dashboardSnapshot_(tables.get('Participants'), tables.get(
 ]), [], challengeId);
 assert.equal(other.validVotes, 2, 'ignore invalid and other-challenge votes');
 const output = new Map(); const clears = [];
+context.SpreadsheetApp = { newRichTextValue() {
+  const value = { text: '', url: '' };
+  return { setText(text) { value.text = text; return this; }, setLinkUrl(url) { value.url = url; return this; }, build() { return value; } };
+}};
+tables.get('Winners').push({ ResultID: 'W-QA', ParticipantID: ana.participant.participantId, Position: 2, FinalVotes: 7, Confirmed: true });
 const dashboard = { setColumnWidth() {}, getRange(...args) {
   const key = args.join(':');
   const range = {
     breakApart() { return range; }, clearContent() { clears.push(key); output.delete(key); return range; },
     merge() { return range; }, setValue(value) { output.set(key, value); return range; },
     setValues(values) { output.set(key, JSON.parse(JSON.stringify(values))); return range; },
+    setRichTextValues(values) { output.set(key, JSON.parse(JSON.stringify(values))); return range; },
+    setBackground() { return range; }, setFontColor() { return range; }, setFontWeight() { return range; },
     setWrap() { return range; }, setFontSize() { return range; }, setNumberFormat() { return range; }
   };
   return range;
@@ -48,10 +55,16 @@ context.refreshDashboard_();
 assert.equal(output.get('A6:B10')[1][1], 2);
 assert.equal(output.get('5:4:2:4').reduce((sum, row) => sum + row[3], 0), 2);
 assert.equal(properties.get('HPQ_DASHBOARD_DIRTY'), '0');
+const selfieLink = output.get('5:8:2:1')[0][0];
+assert.equal(selfieLink.text, 'Ver selfie');
+assert.equal(new URL(selfieLink.url).searchParams.get('selfie'), ana.participant.qrToken);
+assert.equal(context.participantSelfieUrl_({ QRToken: 'QR' }, { FRONTEND_BASE_URL: 'https://example.com/' }), '', 'missing selfie gets no link');
+assert.equal(new URL(tables.get('Winners')[0].SelfieURL).searchParams.get('selfie'), ana.participant.qrToken);
+assert.equal(tables.get('Winners')[0].Position, 2); assert.equal(tables.get('Winners')[0].FinalVotes, 7); assert.equal(tables.get('Winners')[0].Confirmed, true, 'links never alter winner decisions');
 tables.get('Votes')[0].Valid = false;
 context.refreshDashboard_();
 assert.equal(output.get('A6:B10')[1][1], 1);
-assert(clears.includes('5:4:10:4'), 'clear stale ranking rows after an invalidation');
+assert(clears.includes('5:4:10:5'), 'clear stale ranking rows after an invalidation');
 tables.get('Votes')[0].Valid = true;
 assert.equal(JSON.stringify({ participants: tables.get('Participants'), votes: tables.get('Votes') }), sourceBefore, 'refresh preserves original records');
 console.log('Dashboard: automatic refresh, challenge/validity filters, counts, ties, stale rows, preserved records and saved-vote safety on display failure: OK');
