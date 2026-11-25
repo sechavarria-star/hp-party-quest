@@ -1,10 +1,10 @@
 {
   "name": "HP Kick Off 27 Quest",
   "version": "2.2.1",
-  "builtAt": "2026-11-25T18:15:07.532Z",
+  "builtAt": "2026-11-25T18:19:29.663Z",
   "releaseMode": "Local Apps Script authentication + GitHub Pages Actions",
   "files": {
-    ".github/workflows/pages.yml": "29fa0e8fe8835e6a95e7dde5518754b766fdda4b4558ff2fb2ec3fb3685d6d08",
+    ".github/workflows/pages.yml": "519e9b04f237b042563869e29a8fe7249297c942b6d2126c2154e03ebcf7825e",
     ".github/workflows/release-live.yml": "81d977ca4dba32d5bea1f07bf8fb6357382cee3a6e529555c6c6eb02baf568d2",
     ".gitignore": "d0b8c3168b0acba4bf96210ca6a8ef51592579267bd07b892df811d2f9c5c2d5",
     "CHANGELOG.md": "477295bba37763de388392567fdb3a1271f08f935f75b1d3a6ddfeb0012d1e7e",
